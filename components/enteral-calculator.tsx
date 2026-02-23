@@ -339,11 +339,12 @@ function ResultsCard({ result }: { result: CalculationResult }) {
 }
 
 function ResultsSummary({ result }: { result: CalculationResult }) {
+  const unitsPerDay = result.caloriesPerDay / 100
   return (
     <Card>
       <CardContent className="pt-5">
         <p className="text-sm text-foreground leading-relaxed">
-          {`The patient receives ${fmt(result.dailyVolume)}${result.volumeUnit} per day, the requested ${result.formulaName} provides ${fmt(result.kcalPerMl)} calories per mL, the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units are required.`}
+          {`The patient receives ${fmt(result.dailyVolume)}${result.volumeUnit} per day (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the requested ${result.formulaName} provides ${fmt(result.kcalPerMl)} calories per mL, the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units are required.`}
         </p>
       </CardContent>
     </Card>
@@ -435,7 +436,8 @@ export function EnteralCalculator() {
     const caloriesPerDay = dailyMl * kcal
     const numDays = differenceInCalendarDays(endDate!, startDate!) + 1
     const totalCalories = caloriesPerDay * numDays
-    const totalUnits = totalCalories / 100
+    const totalUnitsRaw = totalCalories / 100
+    const totalUnits = Number.isInteger(totalUnitsRaw) ? totalUnitsRaw : Math.ceil(totalUnitsRaw)
 
     setResult({
       dailyMl,
