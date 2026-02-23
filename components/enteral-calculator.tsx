@@ -248,6 +248,8 @@ function DatePickerField({
 
 interface CalculationResult {
   dailyMl: number
+  dailyVolume: number
+  volumeUnit: "oz" | "mL"
   kcalPerMl: number
   caloriesPerDay: number
   numDays: number
@@ -255,6 +257,11 @@ interface CalculationResult {
   totalUnits: number
   formulaName: string
   hcpcsCode: string
+}
+
+/** Format a number: no decimals if whole, otherwise up to `digits` decimal places */
+function fmt(n: number, digits = 2): string {
+  return Number.isInteger(n) ? n.toString() : parseFloat(n.toFixed(digits)).toString()
 }
 
 function ResultsCard({ result }: { result: CalculationResult }) {
@@ -274,7 +281,7 @@ function ResultsCard({ result }: { result: CalculationResult }) {
               Daily Volume
             </span>
             <span className="font-semibold text-foreground">
-              {result.dailyMl.toFixed(1)} mL/day
+              {fmt(result.dailyVolume)} {result.volumeUnit}/day
             </span>
           </div>
           <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
@@ -282,7 +289,7 @@ function ResultsCard({ result }: { result: CalculationResult }) {
               Caloric Density
             </span>
             <span className="font-semibold text-foreground">
-              {result.kcalPerMl} kcal/mL
+              {fmt(result.kcalPerMl)} kcal/mL
             </span>
           </div>
           <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
@@ -290,7 +297,7 @@ function ResultsCard({ result }: { result: CalculationResult }) {
               Calories/Day
             </span>
             <span className="font-semibold text-foreground">
-              {result.caloriesPerDay.toFixed(1)} kcal
+              {fmt(result.caloriesPerDay)} kcal
             </span>
           </div>
           <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
@@ -310,7 +317,7 @@ function ResultsCard({ result }: { result: CalculationResult }) {
             Total Calories
           </span>
           <span className="font-semibold text-foreground">
-            {result.totalCalories.toLocaleString("en-US", { maximumFractionDigits: 1 })} kcal
+            {Number.isInteger(result.totalCalories) ? result.totalCalories.toLocaleString("en-US") : result.totalCalories.toLocaleString("en-US", { maximumFractionDigits: 2 })} kcal
           </span>
         </div>
 
@@ -320,12 +327,25 @@ function ResultsCard({ result }: { result: CalculationResult }) {
             Total Units
           </span>
           <span className="text-4xl font-bold tracking-tight">
-            {result.totalUnits.toFixed(2)}
+            {fmt(result.totalUnits)}
           </span>
           <Badge variant="secondary" className="mt-1 text-xs">
-            {result.totalCalories.toLocaleString("en-US", { maximumFractionDigits: 0 })} kcal / 100
+            {Number.isInteger(result.totalCalories) ? result.totalCalories.toLocaleString("en-US") : result.totalCalories.toLocaleString("en-US", { maximumFractionDigits: 2 })} kcal / 100
           </Badge>
         </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function ResultsSummary({ result }: { result: CalculationResult }) {
+  const unitsPerDay = result.caloriesPerDay / 100
+  return (
+    <Card>
+      <CardContent className="pt-5">
+        <p className="text-sm text-foreground leading-relaxed">
+          {`The patient receives ${fmt(result.dailyVolume)}${result.volumeUnit} per day (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the requested ${result.formulaName} provides ${fmt(result.kcalPerMl)} calories per mL, the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units are required.`}
+        </p>
       </CardContent>
     </Card>
   )
@@ -416,10 +436,13 @@ export function EnteralCalculator() {
     const caloriesPerDay = dailyMl * kcal
     const numDays = differenceInCalendarDays(endDate!, startDate!) + 1
     const totalCalories = caloriesPerDay * numDays
-    const totalUnits = totalCalories / 100
+    const totalUnitsRaw = totalCalories / 100
+    const totalUnits = Number.isInteger(totalUnitsRaw) ? totalUnitsRaw : Math.ceil(totalUnitsRaw)
 
     setResult({
       dailyMl,
+      dailyVolume: vol,
+      volumeUnit,
       kcalPerMl: kcal,
       caloriesPerDay,
       numDays,
@@ -550,8 +573,8 @@ export function EnteralCalculator() {
             {volumeAmount && parseFloat(volumeAmount) > 0 && (
               <p className="text-xs text-muted-foreground">
                 {volumeUnit === "oz"
-                  ? `= ${(parseFloat(volumeAmount) * OZ_TO_ML).toFixed(1)} mL per day`
-                  : `= ${(parseFloat(volumeAmount) / OZ_TO_ML).toFixed(1)} oz per day`}
+                  ? `= ${fmt(parseFloat(volumeAmount) * OZ_TO_ML)} mL per day`
+                  : `= ${fmt(parseFloat(volumeAmount) / OZ_TO_ML)} oz per day`}
               </p>
             )}
           </div>
@@ -608,6 +631,7 @@ export function EnteralCalculator() {
 
       {/* Results */}
       {result && <ResultsCard result={result} />}
+      {result && <ResultsSummary result={result} />}
     </div>
   )
 }
