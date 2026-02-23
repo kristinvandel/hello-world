@@ -344,7 +344,7 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
     <Card>
       <CardContent className="pt-5">
         <p className="text-sm text-foreground leading-relaxed">
-          {`The patient receives ${fmt(result.dailyVolume)}${result.volumeUnit} per day (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the requested ${result.formulaName} provides ${fmt(result.kcalPerMl)} calories per mL, the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units are required.`}
+          {`The patient receives ${fmt(result.dailyVolume)}${result.volumeUnit} per day, the requested ${result.formulaName} provides ${fmt(result.kcalPerMl)} calories per mL (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units are required.`}
         </p>
       </CardContent>
     </Card>
