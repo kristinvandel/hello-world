@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react"
 import { differenceInCalendarDays, format } from "date-fns"
-import { CalendarIcon, ChevronDown, Calculator, RotateCcw, Copy, Check } from "lucide-react"
+import { CalendarIcon, ChevronDown, Calculator, RotateCcw } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import {
@@ -332,50 +332,12 @@ function ResultsCard({ result }: { result: CalculationResult }) {
 }
 
 function ResultsSummary({ result }: { result: CalculationResult }) {
-  const [copied, setCopied] = useState(false)
-
-  const summaryText = `The patient receives ${result.dailyMl.toFixed(1)}mL per day, the requested ${result.formulaName} provides ${result.kcalPerMl} calories per mL, the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${result.totalUnits.toFixed(2)} units are required.`
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(summaryText)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // Fallback for older browsers
-      const textarea = document.createElement("textarea")
-      textarea.value = summaryText
-      document.body.appendChild(textarea)
-      textarea.select()
-      document.execCommand("copy")
-      document.body.removeChild(textarea)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
-
   return (
     <Card>
-      <CardContent className="flex flex-col gap-3 pt-5">
-        <p className="text-sm text-foreground leading-relaxed">{summaryText}</p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleCopy}
-          className="self-end"
-        >
-          {copied ? (
-            <>
-              <Check className="mr-1.5 size-3.5" />
-              Copied
-            </>
-          ) : (
-            <>
-              <Copy className="mr-1.5 size-3.5" />
-              Copy to Clipboard
-            </>
-          )}
-        </Button>
+      <CardContent className="pt-5">
+        <p className="text-sm text-foreground leading-relaxed">
+          {`The patient receives ${result.dailyMl.toFixed(1)}mL per day, the requested ${result.formulaName} provides ${result.kcalPerMl} calories per mL, the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${result.totalUnits.toFixed(2)} units are required.`}
+        </p>
       </CardContent>
     </Card>
   )
