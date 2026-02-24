@@ -329,14 +329,20 @@ function ResultsCard({ result }: { result: CalculationResult }) {
         </div>
 
         {/* Final result */}
-        <div className="flex flex-col items-center gap-2 rounded-xl bg-primary p-6 text-primary-foreground">
-          <span className="text-xs font-medium uppercase tracking-widest opacity-80">
+        <div className="relative flex flex-col items-center gap-2 rounded-xl bg-primary p-6 text-primary-foreground overflow-hidden">
+          <span className="absolute top-2 left-3 text-2xl opacity-25 select-none pointer-events-none [filter:hue-rotate(200deg)_saturate(2)_brightness(1.4)]" aria-hidden="true">😊</span>
+          <span className="absolute top-4 right-4 text-lg opacity-20 select-none pointer-events-none [filter:hue-rotate(200deg)_saturate(2)_brightness(1.4)]" aria-hidden="true">😊</span>
+          <span className="absolute bottom-2 left-8 text-lg opacity-20 select-none pointer-events-none [filter:hue-rotate(200deg)_saturate(2)_brightness(1.4)]" aria-hidden="true">😊</span>
+          <span className="absolute bottom-3 right-6 text-2xl opacity-25 select-none pointer-events-none [filter:hue-rotate(200deg)_saturate(2)_brightness(1.4)]" aria-hidden="true">😊</span>
+          <span className="absolute top-1/2 left-1 -translate-y-1/2 text-sm opacity-15 select-none pointer-events-none [filter:hue-rotate(200deg)_saturate(2)_brightness(1.4)]" aria-hidden="true">😊</span>
+          <span className="absolute top-1/2 right-1 -translate-y-1/2 text-sm opacity-15 select-none pointer-events-none [filter:hue-rotate(200deg)_saturate(2)_brightness(1.4)]" aria-hidden="true">😊</span>
+          <span className="relative text-xs font-medium uppercase tracking-widest opacity-80">
             Total Units
           </span>
-          <span className="text-4xl font-bold tracking-tight">
+          <span className="relative text-4xl font-bold tracking-tight">
             {fmt(result.totalUnits)}
           </span>
-          <Badge variant="secondary" className="mt-1 text-xs">
+          <Badge variant="secondary" className="relative mt-1 text-xs">
             {Number.isInteger(result.totalCalories) ? result.totalCalories.toLocaleString("en-US") : result.totalCalories.toLocaleString("en-US", { maximumFractionDigits: 2 })} kcal / 100
           </Badge>
         </div>
