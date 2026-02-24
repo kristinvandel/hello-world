@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
-import { differenceInCalendarDays, format } from "date-fns"
+import { useState, useMemo, useCallback, useEffect } from "react"
+import { differenceInCalendarDays, format, parse, isValid } from "date-fns"
 import { CalendarIcon, ChevronDown, ChevronRight, Calculator, RotateCcw } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -109,6 +109,11 @@ function HcpcsCodeSelector({
           </Command>
         </PopoverContent>
       </Popover>
+      {value === "B4149" && (
+        <p className="text-sm font-bold text-destructive">
+          This HCPC may have restrictions, check plan criteria.
+        </p>
+      )}
       {value && (
         <p className="text-xs text-muted-foreground leading-relaxed">
           {HCPCS_CODES.find((c) => c.code === value)?.longDescription}
@@ -214,35 +219,60 @@ function DatePickerField({
   minDate?: Date
 }) {
   const [open, setOpen] = useState(false)
+  const [textValue, setTextValue] = useState(value ? format(value, "MM/dd/yyyy") : "")
+
+  // Sync text when calendar picks a date
+  useEffect(() => {
+    if (value) setTextValue(format(value, "MM/dd/yyyy"))
+  }, [value])
+
+  const handleTextChange = (raw: string) => {
+    // Allow only digits and slashes while typing
+    const cleaned = raw.replace(/[^\d/]/g, "")
+    setTextValue(cleaned)
+
+    // Auto-insert slashes: MM/DD/YYYY
+    if (cleaned.length === 10) {
+      const parsed = parse(cleaned, "MM/dd/yyyy", new Date())
+      if (isValid(parsed)) {
+        if (minDate && parsed < minDate) return
+        onChange(parsed)
+      }
+    }
+  }
 
   return (
     <div className="flex flex-col gap-2">
       <Label className="text-foreground font-semibold">{label}</Label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              "w-full justify-start text-left font-normal h-10",
-              !value && "text-muted-foreground"
-            )}
-          >
-            <CalendarIcon className="mr-2 size-4" />
-            {value ? format(value, "MMM d, yyyy") : "Select date"}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={value}
-            onSelect={(date) => {
-              onChange(date)
-              setOpen(false)
-            }}
-            disabled={minDate ? (date) => date < minDate : undefined}
-          />
-        </PopoverContent>
-      </Popover>
+      <div className="flex gap-2">
+        <Input
+          type="text"
+          placeholder="MM/DD/YYYY"
+          value={textValue}
+          onChange={(e) => handleTextChange(e.target.value)}
+          maxLength={10}
+          className="flex-1 h-10"
+        />
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+              <CalendarIcon className="size-4" />
+              <span className="sr-only">Pick date from calendar</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <Calendar
+              mode="single"
+              selected={value}
+              onSelect={(date) => {
+                onChange(date)
+                setOpen(false)
+              }}
+              disabled={minDate ? (date) => date < minDate : undefined}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
     </div>
   )
 }
@@ -377,13 +407,20 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
 
 function VolumeCalculator({
   onApply,
+  densityType,
 }: {
   onApply: (amount: string, unit: VolumeUnit) => void
+  densityType: DensityType
 }) {
   const [open, setOpen] = useState(false)
   const [amountPerFeeding, setAmountPerFeeding] = useState("")
-  const [feedingUnit, setFeedingUnit] = useState<VolumeUnit>("oz")
+  const [feedingUnit, setFeedingUnit] = useState<VolumeUnit>(densityType === "kcal/g" ? "g" : "oz")
   const [timesPerDay, setTimesPerDay] = useState("")
+
+  // Sync feedingUnit when densityType changes
+  useEffect(() => {
+    setFeedingUnit(densityType === "kcal/g" ? "g" : "oz")
+  }, [densityType])
 
   const calculatedTotal = useMemo(() => {
     const amt = parseFloat(amountPerFeeding)
@@ -645,6 +682,7 @@ export function EnteralCalculator() {
                 type="button"
                 onClick={() => {
                   setDensityType("kcal/mL")
+                  setVolumeUnit("oz")
                   const mlVal = selectedProduct?.kcalPerMl
                   if (mlVal !== null && mlVal !== undefined) setKcalOverride(mlVal.toString())
                   else setKcalOverride("")
@@ -760,6 +798,7 @@ export function EnteralCalculator() {
               </p>
             )}
             <VolumeCalculator
+              densityType={densityType}
               onApply={(amount, unit) => {
                 setVolumeAmount(amount)
                 setVolumeUnit(unit)
