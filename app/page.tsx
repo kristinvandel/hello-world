@@ -6,8 +6,8 @@ export default function Page() {
       <div className="flex-1">
         <EnteralCalculator />
       </div>
-      <footer className="mt-12 pb-6 text-center text-sm text-muted-foreground">
-        Made by Kristin Vandeloecht, LPN
+      <footer className="mt-12 pb-6 text-center text-sm" style={{ color: "#FF69B4" }}>
+        Made by Kristin Vandeloecht
       </footer>
     </main>
   )

@@ -347,15 +347,27 @@ function ResultsCard({ result }: { result: CalculationResult }) {
 
 function ResultsSummary({ result }: { result: CalculationResult }) {
   const unitsPerDay = result.caloriesPerDay / 100
+  const densityUnit = result.densityType === "kcal/g" ? "kcal/g" : "kcal/mL"
   const densityLabel = result.densityType === "kcal/g"
     ? `${fmt(result.densityValue)} calories per gram of powder`
     : `${fmt(result.densityValue)} calories per mL`
+  const volumeLabel = result.densityType === "kcal/g" ? "g" : "mL"
+  const dailyCalcVolume = result.densityType === "kcal/g"
+    ? (result.volumeUnit === "g" ? result.dailyVolume : result.dailyMl)
+    : result.dailyMl
+
   return (
     <Card>
-      <CardContent className="pt-5">
+      <CardContent className="flex flex-col gap-3 pt-5">
         <p className="text-sm text-foreground leading-relaxed">
           {`The patient receives ${fmt(result.dailyVolume)}${result.volumeUnit} per day, the requested ${result.formulaName} provides ${densityLabel} (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units are required.`}
         </p>
+        <Separator />
+        <div className="flex flex-col gap-1.5 text-xs text-muted-foreground font-mono">
+          <p>{`${fmt(dailyCalcVolume)}${volumeLabel} x ${fmt(result.densityValue)} ${densityUnit} = ${fmt(result.caloriesPerDay)} calories/day`}</p>
+          <p>{`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`}</p>
+          <p>{`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units`}</p>
+        </div>
       </CardContent>
     </Card>
   )
@@ -509,6 +521,7 @@ export function EnteralCalculator() {
       if (product?.isPowder && product.kcalPerGram !== null) {
         setDensityType("kcal/g")
         setKcalOverride(product.kcalPerGram.toString())
+        setVolumeUnit("g")
       } else if (product?.kcalPerMl !== null && product?.kcalPerMl !== undefined) {
         setDensityType("kcal/mL")
         setKcalOverride(product.kcalPerMl.toString())
@@ -650,6 +663,7 @@ export function EnteralCalculator() {
                 type="button"
                 onClick={() => {
                   setDensityType("kcal/g")
+                  setVolumeUnit("g")
                   const gVal = selectedProduct?.kcalPerGram
                   if (gVal !== null && gVal !== undefined) setKcalOverride(gVal.toString())
                   else setKcalOverride("")
