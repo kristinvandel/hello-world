@@ -372,25 +372,13 @@ function VolumeCalculator({
   const [amountPerFeeding, setAmountPerFeeding] = useState("")
   const [feedingUnit, setFeedingUnit] = useState<VolumeUnit>("oz")
   const [timesPerDay, setTimesPerDay] = useState("")
-  const [outputUnit, setOutputUnit] = useState<VolumeUnit>("mL")
 
   const calculatedTotal = useMemo(() => {
     const amt = parseFloat(amountPerFeeding)
     const times = parseFloat(timesPerDay)
     if (isNaN(amt) || isNaN(times) || amt <= 0 || times <= 0) return null
-
-    // Convert input to mL first
-    let mlPerFeeding = amt
-    if (feedingUnit === "oz") mlPerFeeding = amt * OZ_TO_ML
-    if (feedingUnit === "g") mlPerFeeding = amt * G_TO_ML
-
-    const totalMl = mlPerFeeding * times
-
-    // Convert to output unit
-    if (outputUnit === "oz") return totalMl / OZ_TO_ML
-    if (outputUnit === "g") return totalMl / G_TO_ML
-    return totalMl
-  }, [amountPerFeeding, feedingUnit, timesPerDay, outputUnit])
+    return amt * times
+  }, [amountPerFeeding, timesPerDay])
 
   return (
     <div className="flex flex-col gap-2">
@@ -449,44 +437,25 @@ function VolumeCalculator({
             </div>
           </div>
 
-          <div className="flex items-end gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs text-muted-foreground">Output unit</Label>
-              <Select
-                value={outputUnit}
-                onValueChange={(val: VolumeUnit) => setOutputUnit(val)}
+          {calculatedTotal !== null && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-foreground">
+                = {fmt(calculatedTotal)} {feedingUnit}/day
+              </span>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => {
+                  onApply(fmt(calculatedTotal), feedingUnit)
+                  setOpen(false)
+                }}
               >
-                <SelectTrigger className="w-20 h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="mL">mL</SelectItem>
-                  <SelectItem value="oz">oz</SelectItem>
-                  <SelectItem value="g">g</SelectItem>
-                </SelectContent>
-              </Select>
+                Use this
+              </Button>
             </div>
-
-            {calculatedTotal !== null && (
-              <div className="flex items-center gap-2 flex-1">
-                <span className="text-sm font-semibold text-foreground">
-                  = {fmt(calculatedTotal)} {outputUnit}/day
-                </span>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  className="h-8 text-xs"
-                  onClick={() => {
-                    onApply(fmt(calculatedTotal), outputUnit)
-                    setOpen(false)
-                  }}
-                >
-                  Use this
-                </Button>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       )}
     </div>
