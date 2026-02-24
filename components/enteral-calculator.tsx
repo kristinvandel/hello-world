@@ -109,6 +109,11 @@ function HcpcsCodeSelector({
           </Command>
         </PopoverContent>
       </Popover>
+      {value === "B4149" && (
+        <p className="text-sm font-bold text-destructive">
+          This HCPC may have restrictions, check plan criteria.
+        </p>
+      )}
       {value && (
         <p className="text-xs text-muted-foreground leading-relaxed">
           {HCPCS_CODES.find((c) => c.code === value)?.longDescription}
