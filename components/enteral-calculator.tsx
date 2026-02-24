@@ -509,6 +509,7 @@ export function EnteralCalculator() {
       if (product?.isPowder && product.kcalPerGram !== null) {
         setDensityType("kcal/g")
         setKcalOverride(product.kcalPerGram.toString())
+        setVolumeUnit("g")
       } else if (product?.kcalPerMl !== null && product?.kcalPerMl !== undefined) {
         setDensityType("kcal/mL")
         setKcalOverride(product.kcalPerMl.toString())
@@ -650,6 +651,7 @@ export function EnteralCalculator() {
                 type="button"
                 onClick={() => {
                   setDensityType("kcal/g")
+                  setVolumeUnit("g")
                   const gVal = selectedProduct?.kcalPerGram
                   if (gVal !== null && gVal !== undefined) setKcalOverride(gVal.toString())
                   else setKcalOverride("")
