@@ -198,15 +198,17 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Resource Benefiber", manufacturer: "Nestle", hcpcsCode: "B4155", kcalPerMl: null },
 
   // ── B4157: Inherited disease of metabolism (Adult) ────────────────────────
-  { name: "PKU Anamix Early Years", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: null },
-  { name: "PKU Anamix Junior", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: null },
-  { name: "Phenex-2", manufacturer: "Abbott", hcpcsCode: "B4157", kcalPerMl: null },
-  { name: "Glutarex-2", manufacturer: "Abbott", hcpcsCode: "B4157", kcalPerMl: null },
-  { name: "Hominex-2", manufacturer: "Abbott", hcpcsCode: "B4157", kcalPerMl: null },
-  { name: "Ketonex-2", manufacturer: "Abbott", hcpcsCode: "B4157", kcalPerMl: null },
-  { name: "Propimex-2", manufacturer: "Abbott", hcpcsCode: "B4157", kcalPerMl: null },
-  { name: "Tyrex-2", manufacturer: "Abbott", hcpcsCode: "B4157", kcalPerMl: null },
-  { name: "UCD Anamix", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: null },
+  // Abbott "-2" powders: 410 kcal/100g; kcal/mL at standard dilution (~20g/100mL water)
+  { name: "Phenex-2 (PKU)", manufacturer: "Abbott", hcpcsCode: "B4157", kcalPerMl: 0.82 },
+  { name: "Glutarex-2 (Glutaric Aciduria)", manufacturer: "Abbott", hcpcsCode: "B4157", kcalPerMl: 0.82 },
+  { name: "Hominex-2 (Homocystinuria)", manufacturer: "Abbott", hcpcsCode: "B4157", kcalPerMl: 0.82 },
+  { name: "Ketonex-2 (MSUD)", manufacturer: "Abbott", hcpcsCode: "B4157", kcalPerMl: 0.82 },
+  { name: "Propimex-2 (Propionic/Methylmalonic)", manufacturer: "Abbott", hcpcsCode: "B4157", kcalPerMl: 0.82 },
+  { name: "Tyrex-2 (Tyrosinemia)", manufacturer: "Abbott", hcpcsCode: "B4157", kcalPerMl: 0.82 },
+  // Nutricia formulas: kcal/mL at standard recommended dilution
+  { name: "PKU Anamix Early Years", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: 0.68 },
+  { name: "PKU Anamix Junior LQ (Liquid)", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: 0.94 },
+  { name: "UCD Anamix Junior", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: 0.9 },
 
   // ── B4158: Pediatric, intact nutrients ────────────────────────────────────
   { name: "PediaSure 1.0 Cal", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0 },
@@ -268,3 +270,6 @@ export function getHcpcsCode(code: string): HcpcsCode | undefined {
 
 // Conversion: 1 oz = 29.5735 mL
 export const OZ_TO_ML = 29.5735
+
+// Conversion: 1 g ≈ 1 mL for enteral formulas (specific gravity ~1.0)
+export const G_TO_ML = 1.0

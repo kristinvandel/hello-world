@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react"
 import { differenceInCalendarDays, format } from "date-fns"
-import { CalendarIcon, ChevronDown, Calculator, RotateCcw } from "lucide-react"
+import { CalendarIcon, ChevronDown, ChevronRight, Calculator, RotateCcw } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import {
@@ -10,6 +10,7 @@ import {
   ENTERAL_PRODUCTS,
   getProductsByCode,
   OZ_TO_ML,
+  G_TO_ML,
   type EnteralProduct,
 } from "@/lib/enteral-data"
 
@@ -246,10 +247,12 @@ function DatePickerField({
 
 // ─── Results Display ───────────────────────────────────────────────────────────
 
+type VolumeUnit = "oz" | "mL" | "g"
+
 interface CalculationResult {
   dailyMl: number
   dailyVolume: number
-  volumeUnit: "oz" | "mL"
+  volumeUnit: VolumeUnit
   kcalPerMl: number
   caloriesPerDay: number
   numDays: number
@@ -351,6 +354,138 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
   )
 }
 
+// ─── Volume Calculator ─────────────────────────────────────────────────────────
+
+function VolumeCalculator({
+  onApply,
+}: {
+  onApply: (amount: string, unit: VolumeUnit) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [amountPerFeeding, setAmountPerFeeding] = useState("")
+  const [feedingUnit, setFeedingUnit] = useState<VolumeUnit>("oz")
+  const [timesPerDay, setTimesPerDay] = useState("")
+  const [outputUnit, setOutputUnit] = useState<VolumeUnit>("mL")
+
+  const calculatedTotal = useMemo(() => {
+    const amt = parseFloat(amountPerFeeding)
+    const times = parseFloat(timesPerDay)
+    if (isNaN(amt) || isNaN(times) || amt <= 0 || times <= 0) return null
+
+    // Convert input to mL first
+    let mlPerFeeding = amt
+    if (feedingUnit === "oz") mlPerFeeding = amt * OZ_TO_ML
+    if (feedingUnit === "g") mlPerFeeding = amt * G_TO_ML
+
+    const totalMl = mlPerFeeding * times
+
+    // Convert to output unit
+    if (outputUnit === "oz") return totalMl / OZ_TO_ML
+    if (outputUnit === "g") return totalMl / G_TO_ML
+    return totalMl
+  }, [amountPerFeeding, feedingUnit, timesPerDay, outputUnit])
+
+  return (
+    <div className="flex flex-col gap-2">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline cursor-pointer w-fit"
+      >
+        <ChevronRight
+          className={cn("size-3.5 transition-transform", open && "rotate-90")}
+        />
+        Calculate daily volume
+      </button>
+
+      {open && (
+        <div className="rounded-lg border border-border bg-muted/40 p-3 flex flex-col gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-xs text-muted-foreground">Amount per feeding</Label>
+              <div className="flex gap-1.5">
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  placeholder="Amount"
+                  value={amountPerFeeding}
+                  onChange={(e) => setAmountPerFeeding(e.target.value)}
+                  className="flex-1 h-8 text-sm"
+                />
+                <Select
+                  value={feedingUnit}
+                  onValueChange={(val: VolumeUnit) => setFeedingUnit(val)}
+                >
+                  <SelectTrigger className="w-16 h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="oz">oz</SelectItem>
+                    <SelectItem value="mL">mL</SelectItem>
+                    <SelectItem value="g">g</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-xs text-muted-foreground">Times per day</Label>
+              <Input
+                type="number"
+                step="1"
+                min="1"
+                placeholder="# feedings"
+                value={timesPerDay}
+                onChange={(e) => setTimesPerDay(e.target.value)}
+                className="h-8 text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-end gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-xs text-muted-foreground">Output unit</Label>
+              <Select
+                value={outputUnit}
+                onValueChange={(val: VolumeUnit) => setOutputUnit(val)}
+              >
+                <SelectTrigger className="w-20 h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mL">mL</SelectItem>
+                  <SelectItem value="oz">oz</SelectItem>
+                  <SelectItem value="g">g</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {calculatedTotal !== null && (
+              <div className="flex items-center gap-2 flex-1">
+                <span className="text-sm font-semibold text-foreground">
+                  = {fmt(calculatedTotal)} {outputUnit}/day
+                </span>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => {
+                    onApply(fmt(calculatedTotal), outputUnit)
+                    setOpen(false)
+                  }}
+                >
+                  Use this
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main Calculator ───────────────────────────────────────────────────────────
 
 export function EnteralCalculator() {
@@ -359,7 +494,7 @@ export function EnteralCalculator() {
   const [formulaName, setFormulaName] = useState("")
   const [kcalOverride, setKcalOverride] = useState("")
   const [volumeAmount, setVolumeAmount] = useState("")
-  const [volumeUnit, setVolumeUnit] = useState<"oz" | "mL">("oz")
+  const [volumeUnit, setVolumeUnit] = useState<VolumeUnit>("oz")
   const [startDate, setStartDate] = useState<Date | undefined>()
   const [endDate, setEndDate] = useState<Date | undefined>()
   const [result, setResult] = useState<CalculationResult | null>(null)
@@ -432,7 +567,7 @@ export function EnteralCalculator() {
     }
 
     // Calculate
-    const dailyMl = volumeUnit === "oz" ? vol * OZ_TO_ML : vol
+    const dailyMl = volumeUnit === "oz" ? vol * OZ_TO_ML : volumeUnit === "g" ? vol * G_TO_ML : vol
     const caloriesPerDay = dailyMl * kcal
     const numDays = differenceInCalendarDays(endDate!, startDate!) + 1
     const totalCalories = caloriesPerDay * numDays
@@ -556,7 +691,7 @@ export function EnteralCalculator() {
               />
               <Select
                 value={volumeUnit}
-                onValueChange={(val: "oz" | "mL") => {
+                onValueChange={(val: VolumeUnit) => {
                   setVolumeUnit(val)
                   setResult(null)
                 }}
@@ -567,16 +702,24 @@ export function EnteralCalculator() {
                 <SelectContent>
                   <SelectItem value="oz">oz</SelectItem>
                   <SelectItem value="mL">mL</SelectItem>
+                  <SelectItem value="g">g</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {volumeAmount && parseFloat(volumeAmount) > 0 && (
               <p className="text-xs text-muted-foreground">
-                {volumeUnit === "oz"
-                  ? `= ${fmt(parseFloat(volumeAmount) * OZ_TO_ML)} mL per day`
-                  : `= ${fmt(parseFloat(volumeAmount) / OZ_TO_ML)} oz per day`}
+                {volumeUnit === "oz" && `= ${fmt(parseFloat(volumeAmount) * OZ_TO_ML)} mL per day`}
+                {volumeUnit === "mL" && `= ${fmt(parseFloat(volumeAmount) / OZ_TO_ML)} oz per day`}
+                {volumeUnit === "g" && `= ${fmt(parseFloat(volumeAmount) * G_TO_ML)} mL per day`}
               </p>
             )}
+            <VolumeCalculator
+              onApply={(amount, unit) => {
+                setVolumeAmount(amount)
+                setVolumeUnit(unit)
+                setResult(null)
+              }}
+            />
           </div>
 
           {/* Step 5: Date Range */}
