@@ -130,3 +130,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Switch lavender/purple to pink when calculation is complete */
+.calculated {
+  --primary: oklch(0.60 0.18 350);
+  --primary-foreground: oklch(0.99 0.005 350);
+  --ring: oklch(0.60 0.18 350);
+  --border: oklch(0.88 0.03 350);
+  --muted: oklch(0.95 0.02 350);
+}

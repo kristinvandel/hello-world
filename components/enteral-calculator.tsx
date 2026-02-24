@@ -628,7 +628,7 @@ export function EnteralCalculator() {
   }, [])
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-xl mx-auto">
+    <div className={cn("flex flex-col gap-6 w-full max-w-xl mx-auto", result && "calculated")}>
       {/* Main Form Card */}
       <Card>
         <CardHeader>
