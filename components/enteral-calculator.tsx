@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import { differenceInCalendarDays, format } from "date-fns"
 import { CalendarIcon, ChevronDown, ChevronRight, Calculator, RotateCcw } from "lucide-react"
 
@@ -377,13 +377,20 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
 
 function VolumeCalculator({
   onApply,
+  densityType,
 }: {
   onApply: (amount: string, unit: VolumeUnit) => void
+  densityType: DensityType
 }) {
   const [open, setOpen] = useState(false)
   const [amountPerFeeding, setAmountPerFeeding] = useState("")
-  const [feedingUnit, setFeedingUnit] = useState<VolumeUnit>("oz")
+  const [feedingUnit, setFeedingUnit] = useState<VolumeUnit>(densityType === "kcal/g" ? "g" : "oz")
   const [timesPerDay, setTimesPerDay] = useState("")
+
+  // Sync feedingUnit when densityType changes
+  useEffect(() => {
+    setFeedingUnit(densityType === "kcal/g" ? "g" : "oz")
+  }, [densityType])
 
   const calculatedTotal = useMemo(() => {
     const amt = parseFloat(amountPerFeeding)
@@ -645,6 +652,7 @@ export function EnteralCalculator() {
                 type="button"
                 onClick={() => {
                   setDensityType("kcal/mL")
+                  setVolumeUnit("oz")
                   const mlVal = selectedProduct?.kcalPerMl
                   if (mlVal !== null && mlVal !== undefined) setKcalOverride(mlVal.toString())
                   else setKcalOverride("")
@@ -760,6 +768,7 @@ export function EnteralCalculator() {
               </p>
             )}
             <VolumeCalculator
+              densityType={densityType}
               onApply={(amount, unit) => {
                 setVolumeAmount(amount)
                 setVolumeUnit(unit)
