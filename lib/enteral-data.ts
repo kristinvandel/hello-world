@@ -7,6 +7,16 @@ export interface HcpcsCode {
   longDescription: string
 }
 
+export type PackagingType = "can" | "carton" | "packet" | "bottle" | "pouch" | "box" | "tub"
+
+export interface PackagingOption {
+  type: "can" | "carton" | "packet" | "bottle" | "pouch" | "box" | "tub"
+  label: string // e.g., "8 fl oz can", "32 fl oz carton", "7g packet"
+  mlPerUnit?: number // mL per unit (for liquid packaging)
+  gramsPerUnit?: number // grams per unit (for powder packaging)
+  kcalPerUnit?: number // total kcal per unit (optional, for convenience)
+}
+
 export interface EnteralProduct {
   name: string
   manufacturer: string
@@ -14,6 +24,7 @@ export interface EnteralProduct {
   kcalPerMl: number | null // kcal per mL of liquid (null = user must enter manually)
   kcalPerGram: number | null // kcal per gram of powder (for powder-based formulas)
   isPowder?: boolean // true for powder formulas where kcal/g is the primary density
+  packaging?: PackagingOption[] // available packaging options
 }
 
 // ─── HCPCS Code Definitions ────────────────────────────────────────────────────
@@ -129,10 +140,10 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Jevity 1.2 Cal", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.2, kcalPerGram: null },
   { name: "Promote", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.0, kcalPerGram: null },
   { name: "Promote with Fiber", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "Ensure", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "Ensure with Fiber", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.1, kcalPerGram: null },
-  { name: "Ensure High Protein", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "Ensure Original", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.06, kcalPerGram: null },
+  { name: "Ensure", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
+  { name: "Ensure with Fiber", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.1, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 261 }, { type: "can", label: "8 fl oz can", mlPerUnit: 237, kcalPerUnit: 261 }] },
+  { name: "Ensure High Protein", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }] },
+  { name: "Ensure Original", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.06, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 250 }] },
   { name: "Ensure Clear", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 0.9, kcalPerGram: null },
   { name: "Ensure Max Protein", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 0.68, kcalPerGram: null },
   // Nestle
@@ -251,8 +262,8 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   // B4155: Modular/Incomplete nutrients (Additives)
   // ══════════════════════════════════════════════════════════════════════════════
   // ─── Protein Modulars ─────────────────────────────────────────────────────────
-  { name: "Beneprotein (Protein Powder)", manufacturer: "Nestle", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 3.6, isPowder: true },
-  { name: "Beneprotein (Instant Protein Powder)", manufacturer: "Nestle", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 3.6, isPowder: true },
+  { name: "Beneprotein (Protein Powder)", manufacturer: "Nestle", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 3.6, isPowder: true, packaging: [{ type: "packet", label: "7g packet", gramsPerUnit: 7, kcalPerUnit: 25 }, { type: "tub", label: "8 oz canister", gramsPerUnit: 227 }] },
+  { name: "Beneprotein (Instant Protein Powder)", manufacturer: "Nestle", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 3.6, isPowder: true, packaging: [{ type: "packet", label: "7g packet", gramsPerUnit: 7, kcalPerUnit: 25 }] },
   { name: "ProMod Liquid Protein", manufacturer: "Abbott", hcpcsCode: "B4155", kcalPerMl: 1.0, kcalPerGram: null },
   { name: "ProPass Protein Powder", manufacturer: "Hormel", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 3.0, isPowder: true },
   { name: "Juven (Arginine/Glutamine/HMB)", manufacturer: "Abbott", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 3.3, isPowder: true },
@@ -278,10 +289,10 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Microlipid", manufacturer: "Nestle", hcpcsCode: "B4155", kcalPerMl: 4.5, kcalPerGram: null },
   { name: "Liquigen", manufacturer: "Nutricia", hcpcsCode: "B4155", kcalPerMl: 4.5, kcalPerGram: null },
   // ─── Combined Calorie Modulars (Fat + Carb) ───────────────────────────────────
-  { name: "Duocal (Powder)", manufacturer: "Nutricia", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 4.9, isPowder: true },
+  { name: "Duocal (Powder)", manufacturer: "Nutricia", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 4.9, isPowder: true, packaging: [{ type: "tub", label: "400g can", gramsPerUnit: 400 }] },
   { name: "Duocal Liquid", manufacturer: "Nutricia", hcpcsCode: "B4155", kcalPerMl: 1.5, kcalPerGram: null },
-  { name: "Duocal Super Soluble", manufacturer: "Nutricia", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 4.9, isPowder: true },
-  { name: "Benecalorie", manufacturer: "Nestle", hcpcsCode: "B4155", kcalPerMl: 7.2, kcalPerGram: null },
+  { name: "Duocal Super Soluble", manufacturer: "Nutricia", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 4.9, isPowder: true, packaging: [{ type: "tub", label: "400g can", gramsPerUnit: 400 }] },
+  { name: "Benecalorie", manufacturer: "Nestle", hcpcsCode: "B4155", kcalPerMl: 7.2, kcalPerGram: null, packaging: [{ type: "bottle", label: "1.5 fl oz bottle", mlPerUnit: 44, kcalPerUnit: 330 }] },
   { name: "CaloriSmart", manufacturer: "Medtrition", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 4.0, isPowder: true },
   // ─── Fiber Modulars ───────────────────────────────────────────────────────────
   { name: "Resource Benefiber", manufacturer: "Nestle", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 2.0, isPowder: true },
@@ -340,9 +351,9 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   // B4158: Pediatric, intact nutrients
   // ══════════════════════════════════════════════════════════════════════════════
   // Abbott
-  { name: "PediaSure 1.0 Cal", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "PediaSure with Fiber", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "PediaSure Enteral", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null },
+  { name: "PediaSure 1.0 Cal", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "can", label: "8 fl oz can", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
+  { name: "PediaSure with Fiber", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
+  { name: "PediaSure Enteral", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }, { type: "bottle", label: "237 mL bottle", mlPerUnit: 237, kcalPerUnit: 237 }] },
   { name: "Similac Advance", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 0.67, kcalPerGram: 5.1, isPowder: true },
   { name: "Similac Advance Powder", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: null, kcalPerGram: 5.1, isPowder: true },
   { name: "Similac PM 60/40", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 0.67, kcalPerGram: 5.1, isPowder: true },
@@ -417,16 +428,16 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "PediaSure Peptide 1.0 Cal", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null },
   { name: "PediaSure Peptide 1.5 Cal", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.5, kcalPerGram: null },
   // Abbott - EleCare (Elemental / Amino Acid Based)
-  { name: "EleCare Jr", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "EleCare Jr (Vanilla)", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "EleCare Jr (Unflavored)", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "EleCare (Infant)", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.0, isPowder: true },
-  { name: "EleCare Infant (Powder)", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: null, kcalPerGram: 5.0, isPowder: true },
-  { name: "EleCare DHA/ARA", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.0, isPowder: true },
+  { name: "EleCare Jr", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "can", label: "14.1 oz can (powder)", gramsPerUnit: 400 }, { type: "carton", label: "8 fl oz carton", mlPerUnit: 237, kcalPerUnit: 237 }] },
+  { name: "EleCare Jr (Vanilla)", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "can", label: "14.1 oz can (powder)", gramsPerUnit: 400 }, { type: "carton", label: "8 fl oz carton", mlPerUnit: 237, kcalPerUnit: 237 }] },
+  { name: "EleCare Jr (Unflavored)", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "can", label: "14.1 oz can (powder)", gramsPerUnit: 400 }] },
+  { name: "EleCare (Infant)", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "14.1 oz can", gramsPerUnit: 400 }] },
+  { name: "EleCare Infant (Powder)", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: null, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "14.1 oz can", gramsPerUnit: 400 }] },
+  { name: "EleCare DHA/ARA", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "14.1 oz can", gramsPerUnit: 400 }] },
   // Abbott - Alimentum (Extensively Hydrolyzed)
-  { name: "Similac Alimentum", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.0, isPowder: true },
-  { name: "Similac Alimentum (Ready-to-Feed)", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: null },
-  { name: "Similac Alimentum (Powder)", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: null, kcalPerGram: 5.0, isPowder: true },
+  { name: "Similac Alimentum", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "12.1 oz can (powder)", gramsPerUnit: 343 }, { type: "bottle", label: "2 fl oz RTF bottle", mlPerUnit: 59 }, { type: "bottle", label: "8 fl oz RTF bottle", mlPerUnit: 237 }, { type: "carton", label: "32 fl oz RTF carton", mlPerUnit: 946 }] },
+  { name: "Similac Alimentum (Ready-to-Feed)", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: null, packaging: [{ type: "bottle", label: "2 fl oz bottle", mlPerUnit: 59 }, { type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237 }, { type: "carton", label: "32 fl oz carton", mlPerUnit: 946 }] },
+  { name: "Similac Alimentum (Powder)", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: null, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "12.1 oz can", gramsPerUnit: 343 }, { type: "can", label: "19.8 oz can", gramsPerUnit: 561 }] },
   // Nestle - Peptamen Jr
   { name: "Peptamen Junior", manufacturer: "Nestle", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null },
   { name: "Peptamen Junior 1.5", manufacturer: "Nestle", hcpcsCode: "B4161", kcalPerMl: 1.5, kcalPerGram: null },
@@ -437,23 +448,23 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Alfamino Junior", manufacturer: "Nestle", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null },
   { name: "Althera", manufacturer: "Nestle", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 4.6, isPowder: true },
   // Nutricia - Neocate (Amino Acid Based / Elemental)
-  { name: "Neocate Infant DHA/ARA", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.0, isPowder: true },
-  { name: "Neocate Infant (Powder)", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: null, kcalPerGram: 5.0, isPowder: true },
-  { name: "Neocate Junior", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "Neocate Junior (Unflavored)", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "Neocate Junior (Tropical)", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "Neocate Junior with Prebiotics", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "Neocate Syneo Infant", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.0, isPowder: true },
+  { name: "Neocate Infant DHA/ARA", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "14.1 oz can", gramsPerUnit: 400 }] },
+  { name: "Neocate Infant (Powder)", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: null, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "14.1 oz can", gramsPerUnit: 400 }] },
+  { name: "Neocate Junior", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "can", label: "14.1 oz can (powder)", gramsPerUnit: 400 }, { type: "carton", label: "8.45 fl oz carton", mlPerUnit: 250, kcalPerUnit: 250 }] },
+  { name: "Neocate Junior (Unflavored)", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "can", label: "14.1 oz can (powder)", gramsPerUnit: 400 }] },
+  { name: "Neocate Junior (Tropical)", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "can", label: "14.1 oz can (powder)", gramsPerUnit: 400 }] },
+  { name: "Neocate Junior with Prebiotics", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "can", label: "14.1 oz can (powder)", gramsPerUnit: 400 }] },
+  { name: "Neocate Syneo Infant", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "14.1 oz can", gramsPerUnit: 400 }] },
   // Nutricia - PurAmino (Amino Acid)
   { name: "PurAmino", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.0, isPowder: true },
   { name: "PurAmino Junior", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: null },
   // Mead Johnson - Nutramigen (Extensively Hydrolyzed)
-  { name: "Nutramigen", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.1, isPowder: true },
-  { name: "Nutramigen (Ready-to-Feed)", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: null },
-  { name: "Nutramigen (Powder)", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: null, kcalPerGram: 5.1, isPowder: true },
-  { name: "Nutramigen with Enflora LGG", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.1, isPowder: true },
-  { name: "Nutramigen A+ with LGG", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.1, isPowder: true },
-  { name: "Nutramigen Toddler", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: null },
+  { name: "Nutramigen", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "12.6 oz can (powder)", gramsPerUnit: 357 }, { type: "bottle", label: "2 fl oz RTF bottle", mlPerUnit: 59 }, { type: "bottle", label: "6 fl oz RTF bottle", mlPerUnit: 177 }, { type: "carton", label: "32 fl oz RTF carton", mlPerUnit: 946 }] },
+  { name: "Nutramigen (Ready-to-Feed)", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: null, packaging: [{ type: "bottle", label: "2 fl oz bottle", mlPerUnit: 59 }, { type: "bottle", label: "6 fl oz bottle", mlPerUnit: 177 }, { type: "carton", label: "32 fl oz carton", mlPerUnit: 946 }] },
+  { name: "Nutramigen (Powder)", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: null, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "12.6 oz can", gramsPerUnit: 357 }, { type: "can", label: "19.8 oz can", gramsPerUnit: 561 }] },
+  { name: "Nutramigen with Enflora LGG", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "12.6 oz can (powder)", gramsPerUnit: 357 }] },
+  { name: "Nutramigen A+ with LGG", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "12.6 oz can (powder)", gramsPerUnit: 357 }] },
+  { name: "Nutramigen Toddler", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: null, packaging: [{ type: "can", label: "12.6 oz can (powder)", gramsPerUnit: 357 }] },
   // Mead Johnson - Pregestimil
   { name: "Pregestimil", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.67, kcalPerGram: 5.1, isPowder: true },
   { name: "Pregestimil (Powder)", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: null, kcalPerGram: 5.1, isPowder: true },
