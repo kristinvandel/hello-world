@@ -55,7 +55,13 @@ function UnifiedFormulaSearch({
   onSelect: (hcpcsCode: string, formulaName: string) => void
 }) {
   const [open, setOpen] = useState(false)
-  const [searchMode, setSearchMode] = useState<"formula" | "hcpcs">("formula")
+  const [searchQuery, setSearchQuery] = useState("")
+
+  // Auto-detect if user is searching by HCPCS code (starts with B followed by digits)
+  const isHcpcsSearch = useMemo(() => {
+    const trimmed = searchQuery.trim().toUpperCase()
+    return /^B\d/.test(trimmed)
+  }, [searchQuery])
 
   // Group formulas by HCPCS code for display
   const formulasByCode = useMemo(() => {
@@ -82,31 +88,9 @@ function UnifiedFormulaSearch({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <Label className="text-foreground font-semibold">
-            Search Formula or HCPCS Code
-          </Label>
-          <div className="flex gap-1">
-            <Button
-              type="button"
-              variant={searchMode === "formula" ? "secondary" : "ghost"}
-              size="sm"
-              className="h-6 text-xs px-2"
-              onClick={() => setSearchMode("formula")}
-            >
-              By Formula
-            </Button>
-            <Button
-              type="button"
-              variant={searchMode === "hcpcs" ? "secondary" : "ghost"}
-              size="sm"
-              className="h-6 text-xs px-2"
-              onClick={() => setSearchMode("hcpcs")}
-            >
-              By HCPCS
-            </Button>
-          </div>
-        </div>
+        <Label className="text-foreground font-semibold">
+          Search Formula or HCPCS Code
+        </Label>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -134,16 +118,15 @@ function UnifiedFormulaSearch({
           <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
             <Command>
               <CommandInput 
-                placeholder={searchMode === "formula" 
-                  ? "Type formula name (e.g., Alimentum, Nutramigen, Duocal)..." 
-                  : "Type HCPCS code (e.g., B4161, B4155)..."
-                } 
+                placeholder="Type formula name or HCPCS code (e.g., Alimentum, B4161)..."
+                value={searchQuery}
+                onValueChange={setSearchQuery}
               />
               <CommandList className="max-h-[300px]">
                 <CommandEmpty>
-                  No {searchMode === "formula" ? "formula" : "HCPCS code"} found.
+                  No matching formula or HCPCS code found.
                 </CommandEmpty>
-                {searchMode === "formula" ? (
+                {!isHcpcsSearch ? (
                   // Search by formula - show all products grouped by HCPCS
                   Object.entries(formulasByCode).map(([code, products]) => {
                     const hcpcsInfo = HCPCS_CODES.find((c) => c.code === code)
@@ -184,10 +167,10 @@ function UnifiedFormulaSearch({
                         <CommandItem
                           key={hcpcs.code}
                           value={`${hcpcs.code} ${hcpcs.shortDescription} ${hcpcs.longDescription}`}
-                          onSelect={() => {
-                            // If clicking a code, show formulas for that code
-                            setSearchMode("formula")
-                          }}
+                  onSelect={() => {
+                    // If clicking a code, clear search to show formulas for that code
+                    setSearchQuery("")
+                  }}
                         >
                           <div className="flex flex-col gap-0.5 w-full">
                             <div className="flex items-center justify-between">
