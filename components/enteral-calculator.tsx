@@ -682,6 +682,10 @@ export function EnteralCalculator() {
         : selectedProduct?.kcalPerMl
 
       console.log("[v0] DEBUG density selection:", {
+        formulaName,
+        hcpcsCode,
+        selectedProductName: selectedProduct?.name,
+        selectedProductFound: !!selectedProduct,
         volumeUnit,
         isCalorieInput,
         isPowderPackaging,
