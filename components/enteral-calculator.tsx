@@ -330,6 +330,7 @@ interface CalculationResult {
   dailyMl: number
   dailyVolume: number
   volumeUnit: VolumeUnit
+  volumeUnitLabel: string // Human-readable label (e.g., "8 oz can" instead of "pkg-0")
   densityType: DensityType | null
   densityValue: number | null
   caloriesPerDay: number
@@ -362,9 +363,9 @@ function ResultsCard({ result }: { result: CalculationResult }) {
               <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
                 Daily Volume
               </span>
-              <span className="font-semibold text-foreground">
-                {fmt(result.dailyVolume)} {result.volumeUnit}/day
-              </span>
+  <span className="font-semibold text-foreground">
+  {fmt(result.dailyVolume)} {result.volumeUnitLabel}/day
+  </span>
             </div>
           )}
           {result.densityValue !== null && result.densityType !== null && (
@@ -443,7 +444,7 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
   <p className="text-sm text-foreground leading-relaxed">
   {isDirectCalorieInput 
     ? `The patient receives ${fmt(result.caloriesPerDay)} calories per day (${densityLabel}), which equals ${fmt(unitsPerDay)} units/day. The request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
-    : `The patient receives ${fmt(result.dailyVolume)}${result.volumeUnit} per day, the requested ${result.formulaName} provides ${densityLabel} (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
+    : `The patient receives ${fmt(result.dailyVolume)} ${result.volumeUnitLabel} per day, the requested ${result.formulaName} provides ${densityLabel} (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
   }
   </p>
   <Separator />
@@ -680,10 +681,17 @@ export function EnteralCalculator() {
     const kcal = effectiveKcalValue ?? 1
     const numDays = differenceInCalendarDays(endDate!, startDate!) + 1
 
-    let dailyMl: number
-    let dailyGrams: number
-    let caloriesPerDay: number
-    let displayUnit: VolumeUnit = volumeUnit
+  let dailyMl: number
+  let dailyGrams: number
+  let caloriesPerDay: number
+  let displayUnit: VolumeUnit = volumeUnit
+  
+  // Get human-readable label for volume unit (especially for packaging)
+  let displayUnitLabel: string = volumeUnit
+  if (volumeUnit.startsWith("pkg-") && selectedProduct?.packaging) {
+    const pkgIdx = parseInt(volumeUnit.replace("pkg-", ""))
+    displayUnitLabel = selectedProduct.packaging[pkgIdx]?.label || volumeUnit
+  }
 
     // Handle direct calorie input
     if (volumeUnit === "kcal") {
@@ -752,19 +760,20 @@ export function EnteralCalculator() {
     const totalUnitsRaw = totalCalories / 100
     const totalUnits = Number.isInteger(totalUnitsRaw) ? totalUnitsRaw : Math.ceil(totalUnitsRaw)
 
-    setResult({
-      dailyMl,
-      dailyVolume: vol,
-      volumeUnit: displayUnit,
-      densityType: isCalorieInput ? null : effectiveDensityType,
-      densityValue: isCalorieInput ? null : kcal,
-      caloriesPerDay,
-      numDays,
-      totalCalories,
-      totalUnits,
-      formulaName: isCalorieInput ? "Direct Calorie Input" : formulaName,
-      hcpcsCode: isCalorieInput ? hcpcsCode || "N/A" : hcpcsCode,
-    })
+  setResult({
+  dailyMl,
+  dailyVolume: vol,
+  volumeUnit: displayUnit,
+  volumeUnitLabel: displayUnitLabel,
+  densityType: isCalorieInput ? null : effectiveDensityType,
+  densityValue: isCalorieInput ? null : kcal,
+  caloriesPerDay,
+  numDays,
+  totalCalories,
+  totalUnits,
+  formulaName: isCalorieInput ? "Direct Calorie Input" : formulaName,
+  hcpcsCode: isCalorieInput ? hcpcsCode || "N/A" : hcpcsCode,
+  })
     setErrors([])
   }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, volumeTimePeriod, startDate, endDate])
 
