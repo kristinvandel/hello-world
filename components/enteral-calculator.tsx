@@ -55,7 +55,13 @@ function UnifiedFormulaSearch({
   onSelect: (hcpcsCode: string, formulaName: string) => void
 }) {
   const [open, setOpen] = useState(false)
-  const [searchMode, setSearchMode] = useState<"formula" | "hcpcs">("formula")
+  const [searchQuery, setSearchQuery] = useState("")
+
+  // Auto-detect if user is searching by HCPCS code (starts with B followed by digits)
+  const isHcpcsSearch = useMemo(() => {
+    const trimmed = searchQuery.trim().toUpperCase()
+    return /^B\d/.test(trimmed)
+  }, [searchQuery])
 
   // Group formulas by HCPCS code for display
   const formulasByCode = useMemo(() => {
@@ -82,31 +88,9 @@ function UnifiedFormulaSearch({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <Label className="text-foreground font-semibold">
-            Search Formula or HCPCS Code
-          </Label>
-          <div className="flex gap-1">
-            <Button
-              type="button"
-              variant={searchMode === "formula" ? "secondary" : "ghost"}
-              size="sm"
-              className="h-6 text-xs px-2"
-              onClick={() => setSearchMode("formula")}
-            >
-              By Formula
-            </Button>
-            <Button
-              type="button"
-              variant={searchMode === "hcpcs" ? "secondary" : "ghost"}
-              size="sm"
-              className="h-6 text-xs px-2"
-              onClick={() => setSearchMode("hcpcs")}
-            >
-              By HCPCS
-            </Button>
-          </div>
-        </div>
+        <Label className="text-foreground font-semibold">
+          Search Formula or HCPCS Code
+        </Label>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -134,16 +118,15 @@ function UnifiedFormulaSearch({
           <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
             <Command>
               <CommandInput 
-                placeholder={searchMode === "formula" 
-                  ? "Type formula name (e.g., Alimentum, Nutramigen, Duocal)..." 
-                  : "Type HCPCS code (e.g., B4161, B4155)..."
-                } 
+                placeholder="Type formula name or HCPCS code (e.g., Alimentum, B4161)..."
+                value={searchQuery}
+                onValueChange={setSearchQuery}
               />
               <CommandList className="max-h-[300px]">
                 <CommandEmpty>
-                  No {searchMode === "formula" ? "formula" : "HCPCS code"} found.
+                  No matching formula or HCPCS code found.
                 </CommandEmpty>
-                {searchMode === "formula" ? (
+                {!isHcpcsSearch ? (
                   // Search by formula - show all products grouped by HCPCS
                   Object.entries(formulasByCode).map(([code, products]) => {
                     const hcpcsInfo = HCPCS_CODES.find((c) => c.code === code)
@@ -184,10 +167,10 @@ function UnifiedFormulaSearch({
                         <CommandItem
                           key={hcpcs.code}
                           value={`${hcpcs.code} ${hcpcs.shortDescription} ${hcpcs.longDescription}`}
-                          onSelect={() => {
-                            // If clicking a code, show formulas for that code
-                            setSearchMode("formula")
-                          }}
+                  onSelect={() => {
+                    // If clicking a code, clear search to show formulas for that code
+                    setSearchQuery("")
+                  }}
                         >
                           <div className="flex flex-col gap-0.5 w-full">
                             <div className="flex items-center justify-between">
@@ -347,6 +330,7 @@ interface CalculationResult {
   dailyMl: number
   dailyVolume: number
   volumeUnit: VolumeUnit
+  volumeUnitLabel: string // Human-readable label (e.g., "8 oz can" instead of "pkg-0")
   densityType: DensityType | null
   densityValue: number | null
   caloriesPerDay: number
@@ -379,9 +363,9 @@ function ResultsCard({ result }: { result: CalculationResult }) {
               <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
                 Daily Volume
               </span>
-              <span className="font-semibold text-foreground">
-                {fmt(result.dailyVolume)} {result.volumeUnit}/day
-              </span>
+  <span className="font-semibold text-foreground">
+  {fmt(result.dailyVolume)} {result.volumeUnitLabel}/day
+  </span>
             </div>
           )}
           {result.densityValue !== null && result.densityType !== null && (
@@ -453,6 +437,12 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
   const dailyCalcVolume = result.densityType === "kcal/g"
     ? (result.volumeUnit === "g" ? result.dailyVolume : result.dailyMl)
     : result.dailyMl
+  
+  // Format volume display - use "x" notation for packaging units (e.g., "4 x 8 fl oz bottles")
+  const isPackagingUnit = result.volumeUnit.startsWith("pkg-")
+  const volumeDisplay = isPackagingUnit 
+    ? `${fmt(result.dailyVolume)} x ${result.volumeUnitLabel}${result.dailyVolume !== 1 ? "s" : ""}`
+    : `${fmt(result.dailyVolume)}${result.volumeUnitLabel}`
 
   return (
   <Card>
@@ -460,7 +450,7 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
   <p className="text-sm text-foreground leading-relaxed">
   {isDirectCalorieInput 
     ? `The patient receives ${fmt(result.caloriesPerDay)} calories per day (${densityLabel}), which equals ${fmt(unitsPerDay)} units/day. The request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
-    : `The patient receives ${fmt(result.dailyVolume)}${result.volumeUnit} per day, the requested ${result.formulaName} provides ${densityLabel} (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
+    : `The patient receives ${volumeDisplay} per day, the requested ${result.formulaName} provides ${densityLabel} (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
   }
   </p>
   <Separator />
@@ -483,19 +473,23 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
 function VolumeCalculator({
   onApply,
   densityType,
+  packaging,
 }: {
-  onApply: (amount: string, unit: BaseVolumeUnit) => void
+  onApply: (amount: string, unit: VolumeUnit) => void
   densityType: DensityType
+  packaging?: EnteralProduct["packaging"]
 }) {
   const [open, setOpen] = useState(false)
   const [amountPerFeeding, setAmountPerFeeding] = useState("")
-  const [feedingUnit, setFeedingUnit] = useState<BaseVolumeUnit>(densityType === "kcal/g" ? "g" : "mL")
+  const [feedingUnit, setFeedingUnit] = useState<VolumeUnit>(densityType === "kcal/g" ? "g" : "mL")
   const [timesPerDay, setTimesPerDay] = useState("")
 
-  // Sync feedingUnit when densityType changes
+  // Sync feedingUnit when densityType changes (only reset to base units, not packaging)
   useEffect(() => {
-    setFeedingUnit(densityType === "kcal/g" ? "g" : "mL")
-  }, [densityType])
+    if (!feedingUnit.startsWith("pkg-")) {
+      setFeedingUnit(densityType === "kcal/g" ? "g" : "mL")
+    }
+  }, [densityType, feedingUnit])
 
   const calculatedTotal = useMemo(() => {
     const amt = parseFloat(amountPerFeeding)
@@ -503,6 +497,15 @@ function VolumeCalculator({
     if (isNaN(amt) || isNaN(times) || amt <= 0 || times <= 0) return null
     return amt * times
   }, [amountPerFeeding, timesPerDay])
+
+  // Get display label for the current unit
+  const unitLabel = useMemo(() => {
+    if (feedingUnit.startsWith("pkg-") && packaging) {
+      const pkgIdx = parseInt(feedingUnit.replace("pkg-", ""))
+      return packaging[pkgIdx]?.label || feedingUnit
+    }
+    return feedingUnit
+  }, [feedingUnit, packaging])
 
   return (
     <div className="flex flex-col gap-2">
@@ -534,15 +537,27 @@ function VolumeCalculator({
                 />
                 <Select
                   value={feedingUnit}
-                  onValueChange={(val: BaseVolumeUnit) => setFeedingUnit(val)}
+                  onValueChange={(val: VolumeUnit) => setFeedingUnit(val)}
                 >
-                  <SelectTrigger className="w-16 h-8 text-xs">
+                  <SelectTrigger className="w-20 h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="oz">oz</SelectItem>
                     <SelectItem value="mL">mL</SelectItem>
                     <SelectItem value="g">g</SelectItem>
+                    {packaging && packaging.length > 0 && (
+                      <>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
+                          Packaging
+                        </div>
+                        {packaging.map((pkg, idx) => (
+                          <SelectItem key={`pkg-${idx}`} value={`pkg-${idx}`}>
+                            {pkg.label}
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -564,7 +579,7 @@ function VolumeCalculator({
           {calculatedTotal !== null && (
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-foreground">
-                = {fmt(calculatedTotal)} {feedingUnit}/day
+                = {fmt(calculatedTotal)} {unitLabel}/day
               </span>
               <Button
                 type="button"
@@ -672,10 +687,17 @@ export function EnteralCalculator() {
     const kcal = effectiveKcalValue ?? 1
     const numDays = differenceInCalendarDays(endDate!, startDate!) + 1
 
-    let dailyMl: number
-    let dailyGrams: number
-    let caloriesPerDay: number
-    let displayUnit: VolumeUnit = volumeUnit
+  let dailyMl: number
+  let dailyGrams: number
+  let caloriesPerDay: number
+  let displayUnit: VolumeUnit = volumeUnit
+  
+  // Get human-readable label for volume unit (especially for packaging)
+  let displayUnitLabel: string = volumeUnit
+  if (volumeUnit.startsWith("pkg-") && selectedProduct?.packaging) {
+    const pkgIdx = parseInt(volumeUnit.replace("pkg-", ""))
+    displayUnitLabel = selectedProduct.packaging[pkgIdx]?.label || volumeUnit
+  }
 
     // Handle direct calorie input
     if (volumeUnit === "kcal") {
@@ -744,19 +766,20 @@ export function EnteralCalculator() {
     const totalUnitsRaw = totalCalories / 100
     const totalUnits = Number.isInteger(totalUnitsRaw) ? totalUnitsRaw : Math.ceil(totalUnitsRaw)
 
-    setResult({
-      dailyMl,
-      dailyVolume: vol,
-      volumeUnit: displayUnit,
-      densityType: isCalorieInput ? null : effectiveDensityType,
-      densityValue: isCalorieInput ? null : kcal,
-      caloriesPerDay,
-      numDays,
-      totalCalories,
-      totalUnits,
-      formulaName: isCalorieInput ? "Direct Calorie Input" : formulaName,
-      hcpcsCode: isCalorieInput ? hcpcsCode || "N/A" : hcpcsCode,
-    })
+  setResult({
+  dailyMl,
+  dailyVolume: vol,
+  volumeUnit: displayUnit,
+  volumeUnitLabel: displayUnitLabel,
+  densityType: isCalorieInput ? null : effectiveDensityType,
+  densityValue: isCalorieInput ? null : kcal,
+  caloriesPerDay,
+  numDays,
+  totalCalories,
+  totalUnits,
+  formulaName: isCalorieInput ? "Direct Calorie Input" : formulaName,
+  hcpcsCode: isCalorieInput ? hcpcsCode || "N/A" : hcpcsCode,
+  })
     setErrors([])
   }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, volumeTimePeriod, startDate, endDate])
 
@@ -1045,12 +1068,13 @@ export function EnteralCalculator() {
               </div>
             )}
             
-            <VolumeCalculator
-              densityType={selectedProduct?.isPowder ? "kcal/g" : "kcal/mL"}
-              onApply={(amount, unit) => {
-                setVolumeAmount(amount)
-                setVolumeUnit(unit as VolumeUnit)
-                setVolumeTimePeriod("day") // Calculator always produces daily values
+                <VolumeCalculator
+                  densityType={selectedProduct?.isPowder ? "kcal/g" : "kcal/mL"}
+                  packaging={selectedProduct?.packaging}
+                  onApply={(amount, unit) => {
+                    setVolumeAmount(amount)
+                    setVolumeUnit(unit)
+                    setVolumeTimePeriod("day") // Calculator always produces daily values
                 setResult(null)
               }}
             />
