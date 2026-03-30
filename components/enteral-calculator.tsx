@@ -322,6 +322,7 @@ function DatePickerField({
 type BaseVolumeUnit = "oz" | "mL" | "g"
 type VolumeUnit = BaseVolumeUnit | string // string for packaging units like "pkg-0", "pkg-1", etc.
 type DensityType = "kcal/mL" | "kcal/g"
+type TimePeriod = "day" | "month"
 
 interface CalculationResult {
   dailyMl: number
@@ -560,6 +561,7 @@ export function EnteralCalculator() {
   const [formulaName, setFormulaName] = useState("")
   const [volumeAmount, setVolumeAmount] = useState("")
   const [volumeUnit, setVolumeUnit] = useState<VolumeUnit>("mL")
+  const [volumeTimePeriod, setVolumeTimePeriod] = useState<TimePeriod>("day")
   const [startDate, setStartDate] = useState<Date | undefined>()
   const [endDate, setEndDate] = useState<Date | undefined>()
   const [result, setResult] = useState<CalculationResult | null>(null)
@@ -596,7 +598,7 @@ export function EnteralCalculator() {
 
     const vol = parseFloat(volumeAmount)
     if (!volumeAmount || isNaN(vol) || vol <= 0) {
-      newErrors.push("Please enter a valid daily volume.")
+      newErrors.push("Please enter a valid volume amount.")
     }
 
     if (!startDate) newErrors.push("Please select a start date.")
@@ -625,10 +627,11 @@ export function EnteralCalculator() {
     }
 
     const kcal = effectiveKcalValue!
+    const numDays = differenceInCalendarDays(endDate!, startDate!) + 1
 
-    // Calculate daily volume in base units
-    let dailyMl: number
-    let dailyGrams: number
+    // Calculate volume in base units (before time period conversion)
+    let volumeMl: number
+    let volumeGrams: number
     let displayUnit: VolumeUnit = volumeUnit
 
     if (volumeUnit.startsWith("pkg-")) {
@@ -637,29 +640,41 @@ export function EnteralCalculator() {
       const pkg = selectedProduct?.packaging?.[pkgIdx]
       if (pkg) {
         if (pkg.mlPerUnit) {
-          dailyMl = vol * pkg.mlPerUnit
-          dailyGrams = dailyMl * G_TO_ML
+          volumeMl = vol * pkg.mlPerUnit
+          volumeGrams = volumeMl * G_TO_ML
         } else if (pkg.gramsPerUnit) {
-          dailyGrams = vol * pkg.gramsPerUnit
-          dailyMl = dailyGrams / G_TO_ML
+          volumeGrams = vol * pkg.gramsPerUnit
+          volumeMl = volumeGrams / G_TO_ML
         } else {
-          dailyMl = 0
-          dailyGrams = 0
+          volumeMl = 0
+          volumeGrams = 0
         }
       } else {
-        dailyMl = 0
-        dailyGrams = 0
+        volumeMl = 0
+        volumeGrams = 0
       }
     } else if (volumeUnit === "oz") {
-      dailyMl = vol * OZ_TO_ML
-      dailyGrams = dailyMl * G_TO_ML
+      volumeMl = vol * OZ_TO_ML
+      volumeGrams = volumeMl * G_TO_ML
     } else if (volumeUnit === "g") {
-      dailyGrams = vol
-      dailyMl = vol / G_TO_ML
+      volumeGrams = vol
+      volumeMl = vol / G_TO_ML
     } else {
       // mL
-      dailyMl = vol
-      dailyGrams = vol * G_TO_ML
+      volumeMl = vol
+      volumeGrams = vol * G_TO_ML
+    }
+
+    // Convert to daily values based on time period
+    let dailyMl: number
+    let dailyGrams: number
+    if (volumeTimePeriod === "month") {
+      // If user entered monthly amount, divide by 30 to get daily
+      dailyMl = volumeMl / 30
+      dailyGrams = volumeGrams / 30
+    } else {
+      dailyMl = volumeMl
+      dailyGrams = volumeGrams
     }
 
     // Calculate calories based on density type
@@ -670,7 +685,6 @@ export function EnteralCalculator() {
       caloriesPerDay = dailyMl * kcal
     }
 
-    const numDays = differenceInCalendarDays(endDate!, startDate!) + 1
     const totalCalories = caloriesPerDay * numDays
     const totalUnitsRaw = totalCalories / 100
     const totalUnits = Number.isInteger(totalUnitsRaw) ? totalUnitsRaw : Math.ceil(totalUnitsRaw)
@@ -689,13 +703,14 @@ export function EnteralCalculator() {
       hcpcsCode,
     })
     setErrors([])
-  }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, startDate, endDate])
+  }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, volumeTimePeriod, startDate, endDate])
 
   const handleReset = useCallback(() => {
     setHcpcsCode("")
     setFormulaName("")
     setVolumeAmount("")
     setVolumeUnit("mL")
+    setVolumeTimePeriod("day")
     setStartDate(undefined)
     setEndDate(undefined)
     setResult(null)
@@ -758,18 +773,53 @@ export function EnteralCalculator() {
 
           <Separator />
 
-          {/* Step 4: Daily Volume */}
-          <div className="flex flex-col gap-2">
+          {/* Step 4: Volume Input */}
+          <div className="flex flex-col gap-3">
             <Label htmlFor="volume" className="text-foreground font-semibold">
-              Daily Volume
+              Volume / Quantity
             </Label>
+            
+            {/* Time period toggle */}
+            <div className="flex rounded-lg border border-border overflow-hidden w-fit">
+              <button
+                type="button"
+                onClick={() => {
+                  setVolumeTimePeriod("day")
+                  setResult(null)
+                }}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium transition-colors",
+                  volumeTimePeriod === "day"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/40 text-muted-foreground hover:bg-muted"
+                )}
+              >
+                Per Day
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setVolumeTimePeriod("month")
+                  setResult(null)
+                }}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium transition-colors",
+                  volumeTimePeriod === "month"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/40 text-muted-foreground hover:bg-muted"
+                )}
+              >
+                Per Month
+              </button>
+            </div>
+
             <div className="flex gap-2">
               <Input
                 id="volume"
                 type="number"
                 step="0.1"
                 min="0"
-                placeholder="Amount per day"
+                placeholder={`Amount per ${volumeTimePeriod}`}
                 value={volumeAmount}
                 onChange={(e) => {
                   setVolumeAmount(e.target.value)
@@ -784,11 +834,14 @@ export function EnteralCalculator() {
                   setResult(null)
                 }}
               >
-                <SelectTrigger className="w-28">
+                <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {/* Standard Units */}
+                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                    Standard Units
+                  </div>
                   <SelectItem value="mL">mL</SelectItem>
                   <SelectItem value="oz">oz</SelectItem>
                   <SelectItem value="g">g (powder)</SelectItem>
@@ -797,7 +850,7 @@ export function EnteralCalculator() {
                   {selectedProduct?.packaging && selectedProduct.packaging.length > 0 && (
                     <>
                       <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
-                        Packaging Options
+                        Packaging
                       </div>
                       {selectedProduct.packaging.map((pkg, idx) => (
                         <SelectItem key={`${pkg.type}-${idx}`} value={`pkg-${idx}`}>
@@ -812,22 +865,58 @@ export function EnteralCalculator() {
             
             {/* Volume conversion info */}
             {volumeAmount && parseFloat(volumeAmount) > 0 && (
-              <div className="text-xs text-muted-foreground">
-                {volumeUnit === "oz" && `= ${fmt(parseFloat(volumeAmount) * OZ_TO_ML)} mL per day`}
-                {volumeUnit === "mL" && `= ${fmt(parseFloat(volumeAmount) / OZ_TO_ML)} oz per day`}
-                {volumeUnit === "g" && `= ${fmt(parseFloat(volumeAmount) * G_TO_ML)} mL per day`}
-                {volumeUnit.startsWith("pkg-") && (() => {
-                  const pkgIdx = parseInt(volumeUnit.replace("pkg-", ""))
-                  const pkg = selectedProduct?.packaging?.[pkgIdx]
-                  if (!pkg) return null
+              <div className="text-xs text-muted-foreground bg-muted/30 rounded-md p-2">
+                {(() => {
                   const amount = parseFloat(volumeAmount)
-                  if (pkg.mlPerUnit) {
-                    return `= ${fmt(amount * pkg.mlPerUnit)} mL per day (${amount} x ${pkg.label})`
+                  let baseMl: number | null = null
+                  let baseGrams: number | null = null
+                  let unitLabel = ""
+                  
+                  if (volumeUnit === "oz") {
+                    baseMl = amount * OZ_TO_ML
+                    unitLabel = "oz"
+                  } else if (volumeUnit === "mL") {
+                    baseMl = amount
+                    unitLabel = "mL"
+                  } else if (volumeUnit === "g") {
+                    baseGrams = amount
+                    unitLabel = "g"
+                  } else if (volumeUnit.startsWith("pkg-")) {
+                    const pkgIdx = parseInt(volumeUnit.replace("pkg-", ""))
+                    const pkg = selectedProduct?.packaging?.[pkgIdx]
+                    if (pkg) {
+                      unitLabel = pkg.label
+                      if (pkg.mlPerUnit) {
+                        baseMl = amount * pkg.mlPerUnit
+                      } else if (pkg.gramsPerUnit) {
+                        baseGrams = amount * pkg.gramsPerUnit
+                      }
+                    }
                   }
-                  if (pkg.gramsPerUnit) {
-                    return `= ${fmt(amount * pkg.gramsPerUnit)} g per day (${amount} x ${pkg.label})`
-                  }
-                  return null
+                  
+                  const perPeriod = volumeTimePeriod === "month" ? "per month" : "per day"
+                  const dailyAmount = volumeTimePeriod === "month" ? amount / 30 : amount
+                  const dailyMl = baseMl !== null ? (volumeTimePeriod === "month" ? baseMl / 30 : baseMl) : null
+                  const dailyGrams = baseGrams !== null ? (volumeTimePeriod === "month" ? baseGrams / 30 : baseGrams) : null
+                  
+                  return (
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium">
+                        {amount} {volumeUnit.startsWith("pkg-") ? unitLabel : volumeUnit} {perPeriod}
+                      </span>
+                      {volumeTimePeriod === "month" && (
+                        <span>
+                          = {fmt(dailyAmount)} {volumeUnit.startsWith("pkg-") ? unitLabel : volumeUnit} per day (avg)
+                        </span>
+                      )}
+                      {dailyMl !== null && volumeUnit !== "mL" && (
+                        <span>= {fmt(dailyMl)} mL per day</span>
+                      )}
+                      {dailyGrams !== null && volumeUnit !== "g" && (
+                        <span>= {fmt(dailyGrams)} g per day</span>
+                      )}
+                    </div>
+                  )
                 })()}
               </div>
             )}
@@ -837,6 +926,7 @@ export function EnteralCalculator() {
               onApply={(amount, unit) => {
                 setVolumeAmount(amount)
                 setVolumeUnit(unit as VolumeUnit)
+                setVolumeTimePeriod("day") // Calculator always produces daily values
                 setResult(null)
               }}
             />
