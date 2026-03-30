@@ -422,7 +422,7 @@ function ResultsCard({ result }: { result: CalculationResult }) {
         {/* Final result */}
         <div className="flex flex-col items-center gap-2 rounded-xl bg-primary p-6 text-primary-foreground">
           <span className="text-xs font-medium uppercase tracking-widest opacity-80">
-            Total Units
+            Total Units per Requested Date Span
           </span>
           <span className="text-4xl font-bold tracking-tight">
             {fmt(result.totalUnits)}
@@ -457,7 +457,7 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
         <div className="flex flex-col gap-1.5 text-xs text-muted-foreground font-mono">
           <p>{`${fmt(dailyCalcVolume)}${volumeLabel} x ${fmt(result.densityValue)} ${densityUnit} = ${fmt(result.caloriesPerDay)} calories/day`}</p>
           <p>{`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`}</p>
-          <p>{`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units`}</p>
+          <p>{`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`}</p>
         </div>
       </CardContent>
     </Card>
