@@ -338,7 +338,7 @@ function DatePickerField({
 
 // ─── Results Display ───────────────────────────────────────────────────────────
 
-type BaseVolumeUnit = "oz" | "mL" | "g"
+type BaseVolumeUnit = "oz" | "mL" | "g" | "kcal"
 type VolumeUnit = BaseVolumeUnit | string // string for packaging units like "pkg-0", "pkg-1", etc.
 type DensityType = "kcal/mL" | "kcal/g"
 type TimePeriod = "day" | "month"
@@ -648,60 +648,77 @@ export function EnteralCalculator() {
     const kcal = effectiveKcalValue!
     const numDays = differenceInCalendarDays(endDate!, startDate!) + 1
 
-    // Calculate volume in base units (before time period conversion)
-    let volumeMl: number
-    let volumeGrams: number
+    let dailyMl: number
+    let dailyGrams: number
+    let caloriesPerDay: number
     let displayUnit: VolumeUnit = volumeUnit
 
-    if (volumeUnit.startsWith("pkg-")) {
-      // Handle packaging units
-      const pkgIdx = parseInt(volumeUnit.replace("pkg-", ""))
-      const pkg = selectedProduct?.packaging?.[pkgIdx]
-      if (pkg) {
-        if (pkg.mlPerUnit) {
-          volumeMl = vol * pkg.mlPerUnit
-          volumeGrams = volumeMl * G_TO_ML
-        } else if (pkg.gramsPerUnit) {
-          volumeGrams = vol * pkg.gramsPerUnit
-          volumeMl = volumeGrams / G_TO_ML
+    // Handle direct calorie input
+    if (volumeUnit === "kcal") {
+      // User entered calories directly
+      const inputCalories = vol
+      caloriesPerDay = volumeTimePeriod === "month" ? inputCalories / 30 : inputCalories
+      
+      // Back-calculate volume from calories
+      if (effectiveDensityType === "kcal/g") {
+        dailyGrams = caloriesPerDay / kcal
+        dailyMl = dailyGrams / G_TO_ML
+      } else {
+        dailyMl = caloriesPerDay / kcal
+        dailyGrams = dailyMl * G_TO_ML
+      }
+    } else {
+      // Calculate volume in base units (before time period conversion)
+      let volumeMl: number
+      let volumeGrams: number
+
+      if (volumeUnit.startsWith("pkg-")) {
+        // Handle packaging units
+        const pkgIdx = parseInt(volumeUnit.replace("pkg-", ""))
+        const pkg = selectedProduct?.packaging?.[pkgIdx]
+        if (pkg) {
+          if (pkg.mlPerUnit) {
+            volumeMl = vol * pkg.mlPerUnit
+            volumeGrams = volumeMl * G_TO_ML
+          } else if (pkg.gramsPerUnit) {
+            volumeGrams = vol * pkg.gramsPerUnit
+            volumeMl = volumeGrams / G_TO_ML
+          } else {
+            volumeMl = 0
+            volumeGrams = 0
+          }
         } else {
           volumeMl = 0
           volumeGrams = 0
         }
+      } else if (volumeUnit === "oz") {
+        volumeMl = vol * OZ_TO_ML
+        volumeGrams = volumeMl * G_TO_ML
+      } else if (volumeUnit === "g") {
+        volumeGrams = vol
+        volumeMl = vol / G_TO_ML
       } else {
-        volumeMl = 0
-        volumeGrams = 0
+        // mL
+        volumeMl = vol
+        volumeGrams = vol * G_TO_ML
       }
-    } else if (volumeUnit === "oz") {
-      volumeMl = vol * OZ_TO_ML
-      volumeGrams = volumeMl * G_TO_ML
-    } else if (volumeUnit === "g") {
-      volumeGrams = vol
-      volumeMl = vol / G_TO_ML
-    } else {
-      // mL
-      volumeMl = vol
-      volumeGrams = vol * G_TO_ML
-    }
 
-    // Convert to daily values based on time period
-    let dailyMl: number
-    let dailyGrams: number
-    if (volumeTimePeriod === "month") {
-      // If user entered monthly amount, divide by 30 to get daily
-      dailyMl = volumeMl / 30
-      dailyGrams = volumeGrams / 30
-    } else {
-      dailyMl = volumeMl
-      dailyGrams = volumeGrams
-    }
+      // Convert to daily values based on time period
+      if (volumeTimePeriod === "month") {
+        // If user entered monthly amount, divide by 30 to get daily
+        dailyMl = volumeMl / 30
+        dailyGrams = volumeGrams / 30
+      } else {
+        dailyMl = volumeMl
+        dailyGrams = volumeGrams
+      }
 
-    // Calculate calories based on density type
-    let caloriesPerDay: number
-    if (effectiveDensityType === "kcal/g") {
-      caloriesPerDay = dailyGrams * kcal
-    } else {
-      caloriesPerDay = dailyMl * kcal
+      // Calculate calories based on density type
+      if (effectiveDensityType === "kcal/g") {
+        caloriesPerDay = dailyGrams * kcal
+      } else {
+        caloriesPerDay = dailyMl * kcal
+      }
     }
 
     const totalCalories = caloriesPerDay * numDays
@@ -859,11 +876,17 @@ export function EnteralCalculator() {
                 <SelectContent>
                   {/* Standard Units */}
                   <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    Standard Units
+                    Volume Units
                   </div>
                   <SelectItem value="mL">mL</SelectItem>
                   <SelectItem value="oz">oz</SelectItem>
                   <SelectItem value="g">g (powder)</SelectItem>
+                  
+                  {/* Calories */}
+                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
+                    Calories
+                  </div>
+                  <SelectItem value="kcal">kcal</SelectItem>
                   
                   {/* Product-specific packaging options */}
                   {selectedProduct?.packaging && selectedProduct.packaging.length > 0 && (
@@ -887,6 +910,48 @@ export function EnteralCalculator() {
               <div className="text-xs text-muted-foreground bg-muted/30 rounded-md p-2">
                 {(() => {
                   const amount = parseFloat(volumeAmount)
+                  const perPeriod = volumeTimePeriod === "month" ? "per month" : "per day"
+                  const dailyAmount = volumeTimePeriod === "month" ? amount / 30 : amount
+                  
+                  // Handle calorie input
+                  if (volumeUnit === "kcal") {
+                    const dailyKcal = dailyAmount
+                    const effectiveDensityType = selectedProduct?.isPowder && selectedProduct?.kcalPerGram !== null 
+                      ? "kcal/g" 
+                      : "kcal/mL"
+                    const effectiveKcalValue = effectiveDensityType === "kcal/g" 
+                      ? selectedProduct?.kcalPerGram 
+                      : selectedProduct?.kcalPerMl
+                    
+                    let dailyVolume: number | null = null
+                    let volumeLabel = ""
+                    
+                    if (effectiveKcalValue && effectiveKcalValue > 0) {
+                      if (effectiveDensityType === "kcal/g") {
+                        dailyVolume = dailyKcal / effectiveKcalValue
+                        volumeLabel = "g"
+                      } else {
+                        dailyVolume = dailyKcal / effectiveKcalValue
+                        volumeLabel = "mL"
+                      }
+                    }
+                    
+                    return (
+                      <div className="flex flex-col gap-1">
+                        <span className="font-medium">
+                          {amount} kcal {perPeriod}
+                        </span>
+                        {volumeTimePeriod === "month" && (
+                          <span>= {fmt(dailyKcal)} kcal per day (avg)</span>
+                        )}
+                        {dailyVolume !== null && (
+                          <span>= {fmt(dailyVolume)} {volumeLabel} per day</span>
+                        )}
+                      </div>
+                    )
+                  }
+                  
+                  // Handle volume/packaging input
                   let baseMl: number | null = null
                   let baseGrams: number | null = null
                   let unitLabel = ""
@@ -913,10 +978,25 @@ export function EnteralCalculator() {
                     }
                   }
                   
-                  const perPeriod = volumeTimePeriod === "month" ? "per month" : "per day"
-                  const dailyAmount = volumeTimePeriod === "month" ? amount / 30 : amount
                   const dailyMl = baseMl !== null ? (volumeTimePeriod === "month" ? baseMl / 30 : baseMl) : null
                   const dailyGrams = baseGrams !== null ? (volumeTimePeriod === "month" ? baseGrams / 30 : baseGrams) : null
+                  
+                  // Calculate estimated calories
+                  const effectiveDensityType = selectedProduct?.isPowder && selectedProduct?.kcalPerGram !== null 
+                    ? "kcal/g" 
+                    : "kcal/mL"
+                  const effectiveKcalValue = effectiveDensityType === "kcal/g" 
+                    ? selectedProduct?.kcalPerGram 
+                    : selectedProduct?.kcalPerMl
+                  
+                  let dailyKcal: number | null = null
+                  if (effectiveKcalValue) {
+                    if (effectiveDensityType === "kcal/g" && dailyGrams !== null) {
+                      dailyKcal = dailyGrams * effectiveKcalValue
+                    } else if (dailyMl !== null) {
+                      dailyKcal = dailyMl * effectiveKcalValue
+                    }
+                  }
                   
                   return (
                     <div className="flex flex-col gap-1">
@@ -933,6 +1013,9 @@ export function EnteralCalculator() {
                       )}
                       {dailyGrams !== null && volumeUnit !== "g" && (
                         <span>= {fmt(dailyGrams)} g per day</span>
+                      )}
+                      {dailyKcal !== null && (
+                        <span className="text-primary font-medium">= {fmt(dailyKcal)} kcal per day</span>
                       )}
                     </div>
                   )
