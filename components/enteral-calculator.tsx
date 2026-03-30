@@ -373,23 +373,27 @@ function ResultsCard({ result }: { result: CalculationResult }) {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {/* Breakdown */}
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
-            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-              Daily Volume
-            </span>
-            <span className="font-semibold text-foreground">
-              {fmt(result.dailyVolume)} {result.volumeUnit}/day
-            </span>
-          </div>
-          <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
-            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-              Caloric Density
-            </span>
-            <span className="font-semibold text-foreground">
-              {fmt(result.densityValue)} {result.densityType}
-            </span>
-          </div>
+        <div className={`grid gap-3 text-sm ${result.densityValue !== null ? "grid-cols-2" : "grid-cols-3"}`}>
+          {result.densityValue !== null && (
+            <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                Daily Volume
+              </span>
+              <span className="font-semibold text-foreground">
+                {fmt(result.dailyVolume)} {result.volumeUnit}/day
+              </span>
+            </div>
+          )}
+          {result.densityValue !== null && result.densityType !== null && (
+            <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                Caloric Density
+              </span>
+              <span className="font-semibold text-foreground">
+                {fmt(result.densityValue)} {result.densityType}
+              </span>
+            </div>
+          )}
           <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
             <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
               Calories/Day
@@ -623,7 +627,6 @@ export function EnteralCalculator() {
     
     // When using calories as input, formula is optional
     const isCalorieInput = volumeUnit === "kcal"
-    console.log("[v0] handleCalculate - volumeUnit:", volumeUnit, "isCalorieInput:", isCalorieInput)
 
     if (!isCalorieInput) {
       if (!hcpcsCode) newErrors.push("Please select an HCPCS code.")
@@ -660,14 +663,12 @@ export function EnteralCalculator() {
       }
     }
 
-    console.log("[v0] validation errors:", newErrors)
     if (newErrors.length > 0) {
       setErrors(newErrors)
       setResult(null)
       return
     }
 
-    console.log("[v0] passed validation, calculating...")
     const kcal = effectiveKcalValue ?? 1
     const numDays = differenceInCalendarDays(endDate!, startDate!) + 1
 
@@ -743,7 +744,7 @@ export function EnteralCalculator() {
     const totalUnitsRaw = totalCalories / 100
     const totalUnits = Number.isInteger(totalUnitsRaw) ? totalUnitsRaw : Math.ceil(totalUnitsRaw)
 
-    const resultObj = {
+    setResult({
       dailyMl,
       dailyVolume: vol,
       volumeUnit: displayUnit,
@@ -755,9 +756,7 @@ export function EnteralCalculator() {
       totalUnits,
       formulaName: isCalorieInput ? "Direct Calorie Input" : formulaName,
       hcpcsCode: isCalorieInput ? hcpcsCode || "N/A" : hcpcsCode,
-    }
-    console.log("[v0] setResult:", resultObj)
-    setResult(resultObj)
+    })
     setErrors([])
   }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, volumeTimePeriod, startDate, endDate])
 
