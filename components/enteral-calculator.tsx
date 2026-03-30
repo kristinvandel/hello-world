@@ -666,7 +666,15 @@ export function EnteralCalculator() {
     let effectiveKcalValue: number | null | undefined = null
     
     if (!isCalorieInput) {
-      effectiveDensityType = selectedProduct?.isPowder && selectedProduct?.kcalPerGram !== null 
+      // Use kcal/g ONLY when:
+      // 1. Product is marked as powder AND has kcalPerGram, AND
+      // 2. User is entering grams (volumeUnit === "g") OR a powder packaging unit
+      const isPowderPackaging = volumeUnit.startsWith("pkg-") && selectedProduct?.packaging
+        ? selectedProduct.packaging[parseInt(volumeUnit.replace("pkg-", ""))]?.gramsPerUnit !== undefined
+        : false
+      const userEnteringPowderUnits = volumeUnit === "g" || isPowderPackaging
+      
+      effectiveDensityType = userEnteringPowderUnits && selectedProduct?.kcalPerGram !== null
         ? "kcal/g" 
         : "kcal/mL"
       effectiveKcalValue = effectiveDensityType === "kcal/g" 
