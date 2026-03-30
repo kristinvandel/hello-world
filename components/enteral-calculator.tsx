@@ -466,19 +466,23 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
 function VolumeCalculator({
   onApply,
   densityType,
+  packaging,
 }: {
-  onApply: (amount: string, unit: BaseVolumeUnit) => void
+  onApply: (amount: string, unit: VolumeUnit) => void
   densityType: DensityType
+  packaging?: EnteralProduct["packaging"]
 }) {
   const [open, setOpen] = useState(false)
   const [amountPerFeeding, setAmountPerFeeding] = useState("")
-  const [feedingUnit, setFeedingUnit] = useState<BaseVolumeUnit>(densityType === "kcal/g" ? "g" : "mL")
+  const [feedingUnit, setFeedingUnit] = useState<VolumeUnit>(densityType === "kcal/g" ? "g" : "mL")
   const [timesPerDay, setTimesPerDay] = useState("")
 
-  // Sync feedingUnit when densityType changes
+  // Sync feedingUnit when densityType changes (only reset to base units, not packaging)
   useEffect(() => {
-    setFeedingUnit(densityType === "kcal/g" ? "g" : "mL")
-  }, [densityType])
+    if (!feedingUnit.startsWith("pkg-")) {
+      setFeedingUnit(densityType === "kcal/g" ? "g" : "mL")
+    }
+  }, [densityType, feedingUnit])
 
   const calculatedTotal = useMemo(() => {
     const amt = parseFloat(amountPerFeeding)
@@ -486,6 +490,15 @@ function VolumeCalculator({
     if (isNaN(amt) || isNaN(times) || amt <= 0 || times <= 0) return null
     return amt * times
   }, [amountPerFeeding, timesPerDay])
+
+  // Get display label for the current unit
+  const unitLabel = useMemo(() => {
+    if (feedingUnit.startsWith("pkg-") && packaging) {
+      const pkgIdx = parseInt(feedingUnit.replace("pkg-", ""))
+      return packaging[pkgIdx]?.label || feedingUnit
+    }
+    return feedingUnit
+  }, [feedingUnit, packaging])
 
   return (
     <div className="flex flex-col gap-2">
@@ -517,15 +530,27 @@ function VolumeCalculator({
                 />
                 <Select
                   value={feedingUnit}
-                  onValueChange={(val: BaseVolumeUnit) => setFeedingUnit(val)}
+                  onValueChange={(val: VolumeUnit) => setFeedingUnit(val)}
                 >
-                  <SelectTrigger className="w-16 h-8 text-xs">
+                  <SelectTrigger className="w-20 h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="oz">oz</SelectItem>
                     <SelectItem value="mL">mL</SelectItem>
                     <SelectItem value="g">g</SelectItem>
+                    {packaging && packaging.length > 0 && (
+                      <>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
+                          Packaging
+                        </div>
+                        {packaging.map((pkg, idx) => (
+                          <SelectItem key={`pkg-${idx}`} value={`pkg-${idx}`}>
+                            {pkg.label}
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -547,7 +572,7 @@ function VolumeCalculator({
           {calculatedTotal !== null && (
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-foreground">
-                = {fmt(calculatedTotal)} {feedingUnit}/day
+                = {fmt(calculatedTotal)} {unitLabel}/day
               </span>
               <Button
                 type="button"
@@ -1028,12 +1053,13 @@ export function EnteralCalculator() {
               </div>
             )}
             
-            <VolumeCalculator
-              densityType={selectedProduct?.isPowder ? "kcal/g" : "kcal/mL"}
-              onApply={(amount, unit) => {
-                setVolumeAmount(amount)
-                setVolumeUnit(unit as VolumeUnit)
-                setVolumeTimePeriod("day") // Calculator always produces daily values
+                <VolumeCalculator
+                  densityType={selectedProduct?.isPowder ? "kcal/g" : "kcal/mL"}
+                  packaging={selectedProduct?.packaging}
+                  onApply={(amount, unit) => {
+                    setVolumeAmount(amount)
+                    setVolumeUnit(unit)
+                    setVolumeTimePeriod("day") // Calculator always produces daily values
                 setResult(null)
               }}
             />
