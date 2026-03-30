@@ -623,6 +623,7 @@ export function EnteralCalculator() {
     
     // When using calories as input, formula is optional
     const isCalorieInput = volumeUnit === "kcal"
+    console.log("[v0] handleCalculate - volumeUnit:", volumeUnit, "isCalorieInput:", isCalorieInput)
 
     if (!isCalorieInput) {
       if (!hcpcsCode) newErrors.push("Please select an HCPCS code.")
@@ -659,12 +660,14 @@ export function EnteralCalculator() {
       }
     }
 
+    console.log("[v0] validation errors:", newErrors)
     if (newErrors.length > 0) {
       setErrors(newErrors)
       setResult(null)
       return
     }
 
+    console.log("[v0] passed validation, calculating...")
     const kcal = effectiveKcalValue ?? 1
     const numDays = differenceInCalendarDays(endDate!, startDate!) + 1
 
@@ -679,14 +682,9 @@ export function EnteralCalculator() {
       const inputCalories = vol
       caloriesPerDay = volumeTimePeriod === "month" ? inputCalories / 30 : inputCalories
       
-      // Back-calculate volume from calories
-      if (effectiveDensityType === "kcal/g") {
-        dailyGrams = caloriesPerDay / kcal
-        dailyMl = dailyGrams / G_TO_ML
-      } else {
-        dailyMl = caloriesPerDay / kcal
-        dailyGrams = dailyMl * G_TO_ML
-      }
+      // For direct calorie input, we don't have actual volume - set to 0 since it's not meaningful
+      dailyMl = 0
+      dailyGrams = 0
     } else {
       // Calculate volume in base units (before time period conversion)
       let volumeMl: number
@@ -745,7 +743,7 @@ export function EnteralCalculator() {
     const totalUnitsRaw = totalCalories / 100
     const totalUnits = Number.isInteger(totalUnitsRaw) ? totalUnitsRaw : Math.ceil(totalUnitsRaw)
 
-    setResult({
+    const resultObj = {
       dailyMl,
       dailyVolume: vol,
       volumeUnit: displayUnit,
@@ -757,7 +755,9 @@ export function EnteralCalculator() {
       totalUnits,
       formulaName: isCalorieInput ? "Direct Calorie Input" : formulaName,
       hcpcsCode: isCalorieInput ? hcpcsCode || "N/A" : hcpcsCode,
-    })
+    }
+    console.log("[v0] setResult:", resultObj)
+    setResult(resultObj)
     setErrors([])
   }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, volumeTimePeriod, startDate, endDate])
 
