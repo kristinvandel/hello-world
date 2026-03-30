@@ -666,12 +666,31 @@ export function EnteralCalculator() {
     let effectiveKcalValue: number | null | undefined = null
     
     if (!isCalorieInput) {
-      effectiveDensityType = selectedProduct?.isPowder && selectedProduct?.kcalPerGram !== null 
+      // Use kcal/g ONLY when:
+      // 1. Product is marked as powder AND has kcalPerGram, AND
+      // 2. User is entering grams (volumeUnit === "g") OR a powder packaging unit
+      const isPowderPackaging = volumeUnit.startsWith("pkg-") && selectedProduct?.packaging
+        ? selectedProduct.packaging[parseInt(volumeUnit.replace("pkg-", ""))]?.gramsPerUnit !== undefined
+        : false
+      const userEnteringPowderUnits = volumeUnit === "g" || isPowderPackaging
+      
+      effectiveDensityType = userEnteringPowderUnits && selectedProduct?.kcalPerGram !== null
         ? "kcal/g" 
         : "kcal/mL"
       effectiveKcalValue = effectiveDensityType === "kcal/g" 
         ? selectedProduct?.kcalPerGram 
         : selectedProduct?.kcalPerMl
+      
+      console.log("[v0] Calculation debug:", {
+        volumeUnit,
+        isPowderPackaging,
+        userEnteringPowderUnits,
+        effectiveDensityType,
+        effectiveKcalValue,
+        productKcalPerMl: selectedProduct?.kcalPerMl,
+        productKcalPerGram: selectedProduct?.kcalPerGram,
+        isPowder: selectedProduct?.isPowder,
+      })
 
       if (effectiveKcalValue === null || effectiveKcalValue === undefined) {
         newErrors.push("Caloric density data not available for this formula.")
@@ -760,6 +779,16 @@ export function EnteralCalculator() {
       } else {
         caloriesPerDay = dailyMl * kcal
       }
+      
+      console.log("[v0] Volume calculation debug:", {
+        inputVol: vol,
+        volumeUnit,
+        dailyMl,
+        dailyGrams,
+        effectiveDensityType,
+        kcal,
+        caloriesPerDay,
+      })
     }
 
     const totalCalories = caloriesPerDay * numDays
