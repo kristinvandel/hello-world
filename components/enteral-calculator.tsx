@@ -347,8 +347,8 @@ interface CalculationResult {
   dailyMl: number
   dailyVolume: number
   volumeUnit: VolumeUnit
-  densityType: DensityType
-  densityValue: number
+  densityType: DensityType | null
+  densityValue: number | null
   caloriesPerDay: number
   numDays: number
   totalCalories: number
@@ -438,24 +438,34 @@ function ResultsCard({ result }: { result: CalculationResult }) {
 
 function ResultsSummary({ result }: { result: CalculationResult }) {
   const unitsPerDay = result.caloriesPerDay / 100
+  const isDirectCalorieInput = result.densityType === null
   const densityUnit = result.densityType === "kcal/g" ? "kcal/g" : "kcal/mL"
-  const densityLabel = result.densityType === "kcal/g"
-    ? `${fmt(result.densityValue)} calories per gram of powder`
-    : `${fmt(result.densityValue)} calories per mL`
+  const densityLabel = isDirectCalorieInput
+    ? "direct calorie input"
+    : result.densityType === "kcal/g"
+      ? `${fmt(result.densityValue!)} calories per gram of powder`
+      : `${fmt(result.densityValue!)} calories per mL`
   const volumeLabel = result.densityType === "kcal/g" ? "g" : "mL"
   const dailyCalcVolume = result.densityType === "kcal/g"
     ? (result.volumeUnit === "g" ? result.dailyVolume : result.dailyMl)
     : result.dailyMl
 
   return (
-    <Card>
-      <CardContent className="flex flex-col gap-3 pt-5">
-        <p className="text-sm text-foreground leading-relaxed">
-          {`The patient receives ${fmt(result.dailyVolume)}${result.volumeUnit} per day, the requested ${result.formulaName} provides ${densityLabel} (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`}
-        </p>
-        <Separator />
-        <div className="flex flex-col gap-1.5 text-xs text-muted-foreground font-mono">
-          <p>{`${fmt(dailyCalcVolume)}${volumeLabel} x ${fmt(result.densityValue)} ${densityUnit} = ${fmt(result.caloriesPerDay)} calories/day`}</p>
+  <Card>
+  <CardContent className="flex flex-col gap-3 pt-5">
+  <p className="text-sm text-foreground leading-relaxed">
+  {isDirectCalorieInput 
+    ? `The patient receives ${fmt(result.caloriesPerDay)} calories per day (${densityLabel}), which equals ${fmt(unitsPerDay)} units/day. The request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
+    : `The patient receives ${fmt(result.dailyVolume)}${result.volumeUnit} per day, the requested ${result.formulaName} provides ${densityLabel} (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
+  }
+  </p>
+  <Separator />
+  <div className="flex flex-col gap-1.5 text-xs text-muted-foreground font-mono">
+  {isDirectCalorieInput ? (
+    <p>{`${fmt(result.caloriesPerDay)} calories/day (direct input)`}</p>
+  ) : (
+    <p>{`${fmt(dailyCalcVolume)}${volumeLabel} x ${fmt(result.densityValue!)} ${densityUnit} = ${fmt(result.caloriesPerDay)} calories/day`}</p>
+  )}
           <p>{`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`}</p>
           <p>{`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`}</p>
         </div>
@@ -610,10 +620,15 @@ export function EnteralCalculator() {
 
   const handleCalculate = useCallback(() => {
     const newErrors: string[] = []
+    
+    // When using calories as input, formula is optional
+    const isCalorieInput = volumeUnit === "kcal"
 
-    if (!hcpcsCode) newErrors.push("Please select an HCPCS code.")
-    if (!formulaName) newErrors.push("Please select a formula.")
-    if (!selectedProduct) newErrors.push("Please select a valid formula.")
+    if (!isCalorieInput) {
+      if (!hcpcsCode) newErrors.push("Please select an HCPCS code.")
+      if (!formulaName) newErrors.push("Please select a formula.")
+      if (!selectedProduct) newErrors.push("Please select a valid formula.")
+    }
 
     const vol = parseFloat(volumeAmount)
     if (!volumeAmount || isNaN(vol) || vol <= 0) {
@@ -627,16 +642,21 @@ export function EnteralCalculator() {
       newErrors.push("End date must be on or after start date.")
     }
 
-    // Determine effective caloric density
-    const effectiveDensityType: DensityType = selectedProduct?.isPowder && selectedProduct?.kcalPerGram !== null 
-      ? "kcal/g" 
-      : "kcal/mL"
-    const effectiveKcalValue = effectiveDensityType === "kcal/g" 
-      ? selectedProduct?.kcalPerGram 
-      : selectedProduct?.kcalPerMl
+    // Determine effective caloric density (only needed when not using direct calorie input)
+    let effectiveDensityType: DensityType = "kcal/mL"
+    let effectiveKcalValue: number | null | undefined = null
+    
+    if (!isCalorieInput) {
+      effectiveDensityType = selectedProduct?.isPowder && selectedProduct?.kcalPerGram !== null 
+        ? "kcal/g" 
+        : "kcal/mL"
+      effectiveKcalValue = effectiveDensityType === "kcal/g" 
+        ? selectedProduct?.kcalPerGram 
+        : selectedProduct?.kcalPerMl
 
-    if (effectiveKcalValue === null || effectiveKcalValue === undefined) {
-      newErrors.push("Caloric density data not available for this formula.")
+      if (effectiveKcalValue === null || effectiveKcalValue === undefined) {
+        newErrors.push("Caloric density data not available for this formula.")
+      }
     }
 
     if (newErrors.length > 0) {
@@ -645,7 +665,7 @@ export function EnteralCalculator() {
       return
     }
 
-    const kcal = effectiveKcalValue!
+    const kcal = effectiveKcalValue ?? 1
     const numDays = differenceInCalendarDays(endDate!, startDate!) + 1
 
     let dailyMl: number
@@ -729,14 +749,14 @@ export function EnteralCalculator() {
       dailyMl,
       dailyVolume: vol,
       volumeUnit: displayUnit,
-      densityType: effectiveDensityType,
-      densityValue: kcal,
+      densityType: isCalorieInput ? null : effectiveDensityType,
+      densityValue: isCalorieInput ? null : kcal,
       caloriesPerDay,
       numDays,
       totalCalories,
       totalUnits,
-      formulaName,
-      hcpcsCode,
+      formulaName: isCalorieInput ? "Direct Calorie Input" : formulaName,
+      hcpcsCode: isCalorieInput ? hcpcsCode || "N/A" : hcpcsCode,
     })
     setErrors([])
   }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, volumeTimePeriod, startDate, endDate])
