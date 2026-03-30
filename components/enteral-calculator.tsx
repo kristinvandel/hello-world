@@ -267,32 +267,51 @@ function DatePickerField({
   }, [value])
 
   const handleTextChange = (raw: string) => {
-    // Allow only digits and slashes while typing
-    const cleaned = raw.replace(/[^\d/]/g, "")
-    setTextValue(cleaned)
-
-    // Auto-insert slashes: MM/DD/YYYY
-    if (cleaned.length === 10) {
-      const parsed = parse(cleaned, "MM/dd/yyyy", new Date())
-      if (isValid(parsed)) {
-        if (minDate && parsed < minDate) return
-        onChange(parsed)
-      }
-    }
+  // Allow only digits and slashes while typing
+  const cleaned = raw.replace(/[^\d/]/g, "")
+  setTextValue(cleaned)
+  
+  // Parse various date formats
+  const digitsOnly = cleaned.replace(/\//g, "")
+  let parsed: Date | null = null
+  
+  // Try MM/DD/YYYY format (with slashes, 10 chars)
+  if (cleaned.length === 10 && cleaned.includes("/")) {
+    parsed = parse(cleaned, "MM/dd/yyyy", new Date())
+  }
+  // Try MMDDYYYY format (8 digits, no slashes)
+  else if (digitsOnly.length === 8 && !cleaned.includes("/")) {
+    parsed = parse(digitsOnly, "MMddyyyy", new Date())
+  }
+  // Try MM/DD/YY format (with slashes, 8 chars)
+  else if (cleaned.length === 8 && cleaned.includes("/")) {
+    parsed = parse(cleaned, "MM/dd/yy", new Date())
+  }
+  // Try MMDDYY format (6 digits, no slashes)
+  else if (digitsOnly.length === 6 && !cleaned.includes("/")) {
+    parsed = parse(digitsOnly, "MMddyy", new Date())
+  }
+  
+  if (parsed && isValid(parsed)) {
+    if (minDate && parsed < minDate) return
+    onChange(parsed)
+    // Update display to standard format
+    setTextValue(format(parsed, "MM/dd/yyyy"))
+  }
   }
 
   return (
     <div className="flex flex-col gap-2">
       <Label className="text-foreground font-semibold">{label}</Label>
       <div className="flex gap-2">
-        <Input
-          type="text"
-          placeholder="MM/DD/YYYY"
-          value={textValue}
-          onChange={(e) => handleTextChange(e.target.value)}
-          maxLength={10}
-          className="flex-1 h-10"
-        />
+  <Input
+  type="text"
+  placeholder="MMDDYY or MM/DD/YYYY"
+  value={textValue}
+  onChange={(e) => handleTextChange(e.target.value)}
+  maxLength={10}
+  className="flex-1 h-10"
+  />
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
