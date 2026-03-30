@@ -437,6 +437,12 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
   const dailyCalcVolume = result.densityType === "kcal/g"
     ? (result.volumeUnit === "g" ? result.dailyVolume : result.dailyMl)
     : result.dailyMl
+  
+  // Format volume display - use "x" notation for packaging units (e.g., "4 x 8 fl oz bottles")
+  const isPackagingUnit = result.volumeUnit.startsWith("pkg-")
+  const volumeDisplay = isPackagingUnit 
+    ? `${fmt(result.dailyVolume)} x ${result.volumeUnitLabel}${result.dailyVolume !== 1 ? "s" : ""}`
+    : `${fmt(result.dailyVolume)}${result.volumeUnitLabel}`
 
   return (
   <Card>
@@ -444,7 +450,7 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
   <p className="text-sm text-foreground leading-relaxed">
   {isDirectCalorieInput 
     ? `The patient receives ${fmt(result.caloriesPerDay)} calories per day (${densityLabel}), which equals ${fmt(unitsPerDay)} units/day. The request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
-    : `The patient receives ${fmt(result.dailyVolume)} ${result.volumeUnitLabel} per day, the requested ${result.formulaName} provides ${densityLabel} (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
+    : `The patient receives ${volumeDisplay} per day, the requested ${result.formulaName} provides ${densityLabel} (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
   }
   </p>
   <Separator />
