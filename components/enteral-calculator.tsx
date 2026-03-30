@@ -747,11 +747,14 @@ export function EnteralCalculator() {
     setVolumeAmount("")
     setVolumeUnit("mL")
     setVolumeTimePeriod("day")
-    setStartDate(undefined)
-    setEndDate(undefined)
+    // Preserve valid date span - only clear if dates are invalid
+    if (!startDate || !endDate || endDate < startDate) {
+      setStartDate(undefined)
+      setEndDate(undefined)
+    }
     setResult(null)
     setErrors([])
-  }, [])
+  }, [startDate, endDate])
 
   return (
     <div className={cn("flex flex-col gap-6 w-full max-w-xl mx-auto", result && "calculated")}>
