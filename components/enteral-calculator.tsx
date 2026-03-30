@@ -341,8 +341,13 @@ interface CalculationResult {
   hcpcsCode: string
 }
 
-/** Format a number: no decimals if whole, otherwise up to `digits` decimal places */
+/** Format a number: rounds to whole if very close, otherwise up to `digits` decimal places */
 function fmt(n: number, digits = 2): string {
+  // Round to whole number if within 0.1 of an integer (e.g., 720.02 -> 720)
+  const rounded = Math.round(n)
+  if (Math.abs(n - rounded) < 0.1) {
+    return rounded.toString()
+  }
   return Number.isInteger(n) ? n.toString() : parseFloat(n.toFixed(digits)).toString()
 }
 
@@ -681,22 +686,6 @@ export function EnteralCalculator() {
         ? selectedProduct?.kcalPerGram 
         : selectedProduct?.kcalPerMl
 
-      console.log("[v0] DEBUG density selection:", {
-        formulaName,
-        hcpcsCode,
-        selectedProductName: selectedProduct?.name,
-        selectedProductFound: !!selectedProduct,
-        volumeUnit,
-        isCalorieInput,
-        isPowderPackaging,
-        userEnteringPowderUnits,
-        effectiveDensityType,
-        effectiveKcalValue,
-        productKcalPerMl: selectedProduct?.kcalPerMl,
-        productKcalPerGram: selectedProduct?.kcalPerGram,
-        isPowder: selectedProduct?.isPowder,
-      })
-
       if (effectiveKcalValue === null || effectiveKcalValue === undefined) {
         newErrors.push("Caloric density data not available for this formula.")
       }
@@ -784,19 +773,6 @@ export function EnteralCalculator() {
       } else {
         caloriesPerDay = dailyMl * kcal
       }
-      
-      console.log("[v0] DEBUG calorie calculation:", {
-        vol,
-        volumeUnit,
-        dailyMl,
-        dailyGrams,
-        effectiveDensityType,
-        kcal,
-        caloriesPerDay,
-        formula: effectiveDensityType === "kcal/g" 
-          ? `${dailyGrams} g * ${kcal} kcal/g = ${caloriesPerDay}` 
-          : `${dailyMl} mL * ${kcal} kcal/mL = ${caloriesPerDay}`
-      })
     }
 
     const totalCalories = caloriesPerDay * numDays
@@ -1064,7 +1040,13 @@ export function EnteralCalculator() {
                   const dailyGrams = baseGrams !== null ? (volumeTimePeriod === "month" ? baseGrams / 30 : baseGrams) : null
                   
                   // Calculate estimated calories
-                  const effectiveDensityType = selectedProduct?.isPowder && selectedProduct?.kcalPerGram !== null 
+                  // Use kcal/g ONLY when user is entering grams or powder packaging
+                  const isPowderPackaging = volumeUnit.startsWith("pkg-") && selectedProduct?.packaging
+                    ? selectedProduct.packaging[parseInt(volumeUnit.replace("pkg-", ""))]?.gramsPerUnit !== undefined
+                    : false
+                  const userEnteringPowderUnits = volumeUnit === "g" || isPowderPackaging
+                  
+                  const effectiveDensityType = userEnteringPowderUnits && selectedProduct?.kcalPerGram !== null
                     ? "kcal/g" 
                     : "kcal/mL"
                   const effectiveKcalValue = effectiveDensityType === "kcal/g" 
