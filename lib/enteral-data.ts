@@ -391,7 +391,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   // ══════════════════════════════════════════════════════════════════════════════
   // B4159: Pediatric, soy-based
   // ══════════════════════════════════════════════════════════════════════════════
-  { name: "PediaSure (Soy-Based)", manufacturer: "Abbott", hcpcsCode: "B4159", kcalPerMl: 1.0, kcalPerGram: null },
+  { name: "PediaSure (Soy-Based)", manufacturer: "Abbott", hcpcsCode: "B4159", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }] },
   { name: "Similac Soy Isomil", manufacturer: "Abbott", hcpcsCode: "B4159", kcalPerMl: 0.67, kcalPerGram: 5.0, isPowder: true },
   { name: "Similac Isomil Soy", manufacturer: "Abbott", hcpcsCode: "B4159", kcalPerMl: 0.67, kcalPerGram: 5.0, isPowder: true },
   { name: "Enfamil ProSobee", manufacturer: "Mead Johnson", hcpcsCode: "B4159", kcalPerMl: 0.67, kcalPerGram: 5.1, isPowder: true },
@@ -406,9 +406,9 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   // B4160: Pediatric, calorically dense (>=0.7 kcal/mL)
   // ══════════════════════════════════════════════════════════════════════════════
   // Abbott
-  { name: "PediaSure 1.5 Cal", manufacturer: "Abbott", hcpcsCode: "B4160", kcalPerMl: 1.5, kcalPerGram: null },
-  { name: "PediaSure Grow & Gain", manufacturer: "Abbott", hcpcsCode: "B4160", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "PediaSure Harvest", manufacturer: "Abbott", hcpcsCode: "B4160", kcalPerMl: 1.0, kcalPerGram: null },
+  { name: "PediaSure 1.5 Cal", manufacturer: "Abbott", hcpcsCode: "B4160", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 355 }, { type: "can", label: "8 fl oz can", mlPerUnit: 237, kcalPerUnit: 355 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1500 }] },
+  { name: "PediaSure Grow & Gain", manufacturer: "Abbott", hcpcsCode: "B4160", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "can", label: "8 fl oz can", mlPerUnit: 237, kcalPerUnit: 237 }] },
+  { name: "PediaSure Harvest", manufacturer: "Abbott", hcpcsCode: "B4160", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }] },
   { name: "Similac High Energy", manufacturer: "Abbott", hcpcsCode: "B4160", kcalPerMl: 1.0, kcalPerGram: null },
   // Nestle
   { name: "Boost Kid Essentials 1.5", manufacturer: "Nestle", hcpcsCode: "B4160", kcalPerMl: 1.5, kcalPerGram: null },
@@ -425,8 +425,8 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   // B4161: Pediatric, hydrolyzed proteins (Hypoallergenic / Elemental)
   // ══════════════════════════════════════════════════════════════════════════════
   // Abbott - PediaSure Peptide
-  { name: "PediaSure Peptide 1.0 Cal", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null },
-  { name: "PediaSure Peptide 1.5 Cal", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.5, kcalPerGram: null },
+  { name: "PediaSure Peptide 1.0 Cal", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
+  { name: "PediaSure Peptide 1.5 Cal", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 355 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1500 }] },
   // Abbott - EleCare (Elemental / Amino Acid Based)
   { name: "EleCare Jr", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "can", label: "14.1 oz can (powder)", gramsPerUnit: 400 }, { type: "carton", label: "8 fl oz carton", mlPerUnit: 237, kcalPerUnit: 237 }] },
   { name: "EleCare Jr (Vanilla)", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "can", label: "14.1 oz can (powder)", gramsPerUnit: 400 }, { type: "carton", label: "8 fl oz carton", mlPerUnit: 237, kcalPerUnit: 237 }] },
