@@ -619,6 +619,8 @@ export function EnteralCalculator() {
   const [endDate, setEndDate] = useState<Date | undefined>()
   const [result, setResult] = useState<CalculationResult | null>(null)
   const [errors, setErrors] = useState<string[]>([])
+  const [showDensityOverride, setShowDensityOverride] = useState(false)
+  const [densityOverride, setDensityOverride] = useState("")
 
   // Derived state
   const selectedProduct = useMemo(
@@ -638,6 +640,9 @@ export function EnteralCalculator() {
     } else {
       setVolumeUnit("mL")
     }
+    // Clear any density override when formula changes
+    setShowDensityOverride(false)
+    setDensityOverride("")
     setResult(null)
     setErrors([])
   }, [])
@@ -682,9 +687,16 @@ export function EnteralCalculator() {
       effectiveDensityType = userEnteringPowderUnits && selectedProduct?.kcalPerGram !== null
         ? "kcal/g" 
         : "kcal/mL"
-      effectiveKcalValue = effectiveDensityType === "kcal/g" 
-        ? selectedProduct?.kcalPerGram 
-        : selectedProduct?.kcalPerMl
+      
+      // Check if user provided an override
+      const overrideValue = densityOverride ? parseFloat(densityOverride) : null
+      if (overrideValue !== null && !isNaN(overrideValue) && overrideValue > 0) {
+        effectiveKcalValue = overrideValue
+      } else {
+        effectiveKcalValue = effectiveDensityType === "kcal/g" 
+          ? selectedProduct?.kcalPerGram 
+          : selectedProduct?.kcalPerMl
+      }
 
       if (effectiveKcalValue === null || effectiveKcalValue === undefined) {
         newErrors.push("Caloric density data not available for this formula.")
@@ -794,7 +806,7 @@ export function EnteralCalculator() {
   hcpcsCode: isCalorieInput ? hcpcsCode || "N/A" : hcpcsCode,
   })
     setErrors([])
-  }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, volumeTimePeriod, startDate, endDate])
+  }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, volumeTimePeriod, startDate, endDate, densityOverride])
 
   const handleReset = useCallback(() => {
     setHcpcsCode("")
@@ -802,6 +814,8 @@ export function EnteralCalculator() {
     setVolumeAmount("")
     setVolumeUnit("mL")
     setVolumeTimePeriod("day")
+    setShowDensityOverride(false)
+    setDensityOverride("")
     // Preserve valid date span - only clear if dates are invalid
     if (!startDate || !endDate || endDate < startDate) {
       setStartDate(undefined)
@@ -831,39 +845,6 @@ export function EnteralCalculator() {
             formulaName={formulaName}
             onSelect={handleUnifiedSelect}
           />
-
-          {/* Caloric Density Info (Read-only) */}
-          {selectedProduct && (
-            <div className="flex flex-col gap-2">
-              <Label className="text-foreground font-semibold">
-                Caloric Density
-              </Label>
-              <div className="rounded-lg border border-border bg-muted/40 p-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  {selectedProduct.kcalPerMl !== null && (
-                    <Badge variant="secondary" className="text-sm">
-                      {selectedProduct.kcalPerMl} kcal/mL
-                    </Badge>
-                  )}
-                  {selectedProduct.kcalPerGram !== null && (
-                    <Badge variant="secondary" className="text-sm">
-                      {selectedProduct.kcalPerGram} kcal/g
-                    </Badge>
-                  )}
-                  {selectedProduct.isPowder && (
-                    <Badge variant="outline" className="text-xs">
-                      Powder
-                    </Badge>
-                  )}
-                </div>
-                {selectedProduct.kcalPerMl === null && selectedProduct.kcalPerGram === null && (
-                  <p className="text-xs text-destructive mt-2">
-                    Caloric density data not available for this formula.
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
 
           <Separator />
 
@@ -1097,6 +1078,71 @@ export function EnteralCalculator() {
                 setResult(null)
               }}
             />
+            
+            {/* Caloric Density Override */}
+            {selectedProduct && volumeUnit !== "kcal" && (
+              <div className="flex flex-col gap-2">
+                {!showDensityOverride ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="w-fit text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowDensityOverride(true)}
+                  >
+                    <ChevronRight className="size-3 mr-1" />
+                    Override caloric density
+                  </Button>
+                ) : (
+                  <div className="rounded-lg border border-border bg-muted/30 p-3 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-medium text-muted-foreground">
+                        Custom Caloric Density Override
+                      </Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs"
+                        onClick={() => {
+                          setShowDensityOverride(false)
+                          setDensityOverride("")
+                          setResult(null)
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder={selectedProduct?.isPowder ? "e.g., 4.2" : "e.g., 1.0"}
+                        value={densityOverride}
+                        onChange={(e) => {
+                          setDensityOverride(e.target.value)
+                          setResult(null)
+                        }}
+                        className="flex-1 h-8 text-sm"
+                      />
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {selectedProduct?.isPowder && selectedProduct?.kcalPerGram !== null ? "kcal/g" : "kcal/mL"}
+                      </span>
+                    </div>
+                    {selectedProduct && (
+                      <p className="text-xs text-muted-foreground">
+                        Default: {selectedProduct.isPowder && selectedProduct.kcalPerGram !== null 
+                          ? `${selectedProduct.kcalPerGram} kcal/g`
+                          : selectedProduct.kcalPerMl !== null 
+                            ? `${selectedProduct.kcalPerMl} kcal/mL`
+                            : "Not available"}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Step 5: Date Range */}
