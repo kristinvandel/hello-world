@@ -432,22 +432,27 @@ function ResultsCard({ result }: { result: CalculationResult }) {
 function ResultsSummary({ result }: { result: CalculationResult }) {
   const unitsPerDay = result.caloriesPerDay / 100
   const isDirectCalorieInput = result.densityType === null
-  const densityUnit = result.densityType === "kcal/g" ? "kcal/g" : "kcal/mL"
   const densityLabel = isDirectCalorieInput
     ? "direct calorie input"
     : result.densityType === "kcal/g"
       ? `${fmt(result.densityValue!)} calories per gram of powder`
       : `${fmt(result.densityValue!)} calories per mL`
-  const volumeLabel = result.densityType === "kcal/g" ? "g" : "mL"
-  const dailyCalcVolume = result.densityType === "kcal/g"
-    ? (result.volumeUnit === "g" ? result.dailyVolume : result.dailyMl)
-    : result.dailyMl
   
   // Format volume display - use "x" notation for packaging units (e.g., "4 x 8 fl oz bottles")
   const isPackagingUnit = result.volumeUnit.startsWith("pkg-")
   const volumeDisplay = isPackagingUnit 
     ? `${fmt(result.dailyVolume)} x ${result.volumeUnitLabel}${result.dailyVolume !== 1 ? "s" : ""}`
-    : `${fmt(result.dailyVolume)}${result.volumeUnitLabel}`
+    : `${fmt(result.dailyVolume)} ${result.volumeUnitLabel}`
+  
+  // Determine if we need to show a conversion (user input unit differs from density unit)
+  const userUnit = result.volumeUnit
+  const densityBaseUnit = result.densityType === "kcal/g" ? "g" : "mL"
+  const needsConversion = userUnit !== densityBaseUnit && userUnit !== "kcal" && !isPackagingUnit
+  
+  // Calculate kcal per user unit for display (e.g., kcal/oz)
+  const kcalPerUserUnit = needsConversion && result.densityValue !== null
+    ? (result.caloriesPerDay / result.dailyVolume)
+    : result.densityValue
 
   return (
   <Card>
@@ -463,7 +468,7 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
   {isDirectCalorieInput ? (
     <p>{`${fmt(result.caloriesPerDay)} calories/day (direct input)`}</p>
   ) : (
-    <p>{`${fmt(dailyCalcVolume)}${volumeLabel} x ${fmt(result.densityValue!)} ${densityUnit} = ${fmt(result.caloriesPerDay)} calories/day`}</p>
+    <p>{`${fmt(result.dailyVolume)} ${result.volumeUnitLabel} x ${fmt(kcalPerUserUnit!)} kcal/${result.volumeUnitLabel} = ${fmt(result.caloriesPerDay)} calories/day`}</p>
   )}
           <p>{`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`}</p>
           <p>{`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`}</p>
