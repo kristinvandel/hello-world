@@ -53,13 +53,29 @@ function HcpcsCodeSelector({
   onChange: (code: string) => void
 }) {
   const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+
+  // Filter codes based on search - show all only if search is empty
+  const filteredCodes = useMemo(() => {
+    if (!search.trim()) return HCPCS_CODES
+    const query = search.toLowerCase()
+    return HCPCS_CODES.filter(
+      (hcpcs) =>
+        hcpcs.code.toLowerCase().includes(query) ||
+        hcpcs.shortDescription.toLowerCase().includes(query) ||
+        hcpcs.longDescription.toLowerCase().includes(query)
+    )
+  }, [search])
 
   return (
     <div className="flex flex-col gap-2">
       <Label htmlFor="hcpcs-code" className="text-foreground font-semibold">
         HCPCS Code
       </Label>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={(isOpen) => {
+        setOpen(isOpen)
+        if (!isOpen) setSearch("")
+      }}>
         <PopoverTrigger asChild>
           <Button
             id="hcpcs-code"
@@ -81,18 +97,23 @@ function HcpcsCodeSelector({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-          <Command shouldFilter={true}>
-            <CommandInput placeholder="Type code (B4149, B4150...) or description..." />
+          <Command shouldFilter={false}>
+            <CommandInput 
+              placeholder="Type code (B4149, B4150...) or description..." 
+              value={search}
+              onValueChange={setSearch}
+            />
             <CommandList>
               <CommandEmpty>No code found.</CommandEmpty>
               <CommandGroup>
-                {HCPCS_CODES.map((hcpcs) => (
+                {filteredCodes.map((hcpcs) => (
                   <CommandItem
                     key={hcpcs.code}
-                    value={`${hcpcs.code} ${hcpcs.shortDescription} ${hcpcs.longDescription}`}
+                    value={hcpcs.code}
                     onSelect={() => {
                       onChange(hcpcs.code)
                       setOpen(false)
+                      setSearch("")
                     }}
                   >
                     <div className="flex flex-col gap-0.5">
@@ -136,26 +157,49 @@ function FormulaSelector({
   onSelect: (hcpcsCode: string, formulaName: string) => void
 }) {
   const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
 
-  // If HCPCS is selected, filter products; otherwise show all sorted alphabetically
-  const productsToShow = useMemo(() => {
-    const products = hcpcsCode 
+  // Filter products based on HCPCS code and search query
+  const filteredProducts = useMemo(() => {
+    let products = hcpcsCode 
       ? ENTERAL_PRODUCTS.filter(p => p.hcpcsCode === hcpcsCode)
       : [...ENTERAL_PRODUCTS]
+    
+    // Apply search filter
+    if (search.trim()) {
+      const query = search.toLowerCase()
+      products = products.filter(
+        (p) =>
+          p.name.toLowerCase().includes(query) ||
+          p.manufacturer.toLowerCase().includes(query) ||
+          p.hcpcsCode.toLowerCase().includes(query)
+      )
+    }
+    
     return products.sort((a, b) => a.name.localeCompare(b.name))
-  }, [hcpcsCode])
+  }, [hcpcsCode, search])
 
   const selectedProduct = useMemo(
     () => ENTERAL_PRODUCTS.find((p) => p.name === value),
     [value]
   )
 
+  // Count for the HCPCS filter (before search)
+  const totalForCode = useMemo(() => {
+    return hcpcsCode 
+      ? ENTERAL_PRODUCTS.filter(p => p.hcpcsCode === hcpcsCode).length
+      : ENTERAL_PRODUCTS.length
+  }, [hcpcsCode])
+
   return (
     <div className="flex flex-col gap-2">
       <Label htmlFor="formula" className="text-foreground font-semibold">
         Formula Name
       </Label>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={(isOpen) => {
+        setOpen(isOpen)
+        if (!isOpen) setSearch("")
+      }}>
         <PopoverTrigger asChild>
           <Button
             id="formula"
@@ -179,42 +223,50 @@ function FormulaSelector({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-          <Command shouldFilter={true}>
-            <CommandInput placeholder="Type formula name (e.g., Alimentum, Nutramigen)..." />
+          <Command shouldFilter={false}>
+            <CommandInput 
+              placeholder="Type formula name (e.g., Alimentum, Nutramigen)..." 
+              value={search}
+              onValueChange={setSearch}
+            />
             <CommandList className="max-h-[300px]">
-              <CommandEmpty>No formula found.</CommandEmpty>
-              <CommandGroup>
-                {productsToShow.map((product) => (
-                  <CommandItem
-                    key={`${product.hcpcsCode}-${product.name}`}
-                    value={`${product.name} ${product.manufacturer} ${product.hcpcsCode}`}
-                    onSelect={() => {
-                      onSelect(product.hcpcsCode, product.name)
-                      setOpen(false)
-                    }}
-                  >
-                    <div className="flex flex-col gap-0.5 w-full">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-medium">{product.name}</span>
-                        <span className="text-xs font-mono text-primary shrink-0">{product.hcpcsCode}</span>
+              {filteredProducts.length === 0 ? (
+                <CommandEmpty>No formula found.</CommandEmpty>
+              ) : (
+                <CommandGroup>
+                  {filteredProducts.map((product) => (
+                    <CommandItem
+                      key={`${product.hcpcsCode}-${product.name}`}
+                      value={product.name}
+                      onSelect={() => {
+                        onSelect(product.hcpcsCode, product.name)
+                        setOpen(false)
+                        setSearch("")
+                      }}
+                    >
+                      <div className="flex flex-col gap-0.5 w-full">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium">{product.name}</span>
+                          <span className="text-xs font-mono text-primary shrink-0">{product.hcpcsCode}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {product.manufacturer}
+                          {product.isPowder && product.kcalPerGram !== null && ` \u2022 ${product.kcalPerGram} kcal/g`}
+                          {!product.isPowder && product.kcalPerMl !== null && ` \u2022 ${product.kcalPerMl} kcal/mL`}
+                          {product.isPowder && <span className="ml-1 text-primary">(powder)</span>}
+                        </span>
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {product.manufacturer}
-                        {product.isPowder && product.kcalPerGram !== null && ` \u2022 ${product.kcalPerGram} kcal/g`}
-                        {!product.isPowder && product.kcalPerMl !== null && ` \u2022 ${product.kcalPerMl} kcal/mL`}
-                        {product.isPowder && <span className="ml-1 text-primary">(powder)</span>}
-                      </span>
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
             </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
       {hcpcsCode && (
         <p className="text-xs text-muted-foreground">
-          Showing {productsToShow.length} formula{productsToShow.length !== 1 ? "s" : ""} for {hcpcsCode}
+          Showing {filteredProducts.length} of {totalForCode} formula{totalForCode !== 1 ? "s" : ""} for {hcpcsCode}
         </p>
       )}
     </div>
