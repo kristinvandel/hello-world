@@ -369,6 +369,13 @@ type VolumeUnit = BaseVolumeUnit | string // string for packaging units like "pk
 type DensityType = "kcal/mL" | "kcal/g" | "kcal/oz"
 type TimePeriod = "day" | "month"
 
+interface FeedingBreakdown {
+  amountPerFeeding: number
+  timesPerDay: number
+  feedingUnit: VolumeUnit
+  feedingUnitLabel: string
+}
+
 interface CalculationResult {
   dailyMl: number
   dailyVolume: number
@@ -383,6 +390,7 @@ interface CalculationResult {
   formulaName: string
   hcpcsCode: string
   timePeriod: TimePeriod // Whether user entered per day or per month
+  feedingBreakdown: FeedingBreakdown | null // If calculated using "calculate daily volume" section
 }
 
 /** Format a number: rounds to whole if very close, otherwise up to `digits` decimal places */
@@ -412,9 +420,14 @@ function ResultsCard({ result }: { result: CalculationResult }) {
               <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
                 Daily Volume
               </span>
-  <span className="font-semibold text-foreground">
-  {fmt(result.dailyVolume)} {result.volumeUnitLabel}/day
-  </span>
+              <span className="font-semibold text-foreground">
+                {fmt(result.dailyVolume)} {result.volumeUnitLabel}/day
+              </span>
+              {result.feedingBreakdown && (
+                <span className="text-xs text-muted-foreground mt-0.5">
+                  ({fmt(result.feedingBreakdown.amountPerFeeding)} {result.feedingBreakdown.feedingUnitLabel} x {fmt(result.feedingBreakdown.timesPerDay)} feedings)
+                </span>
+              )}
             </div>
           )}
           {result.densityValue !== null && result.densityType !== null && (
@@ -497,6 +510,11 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
     ? `${fmt(userInputVolume)} x ${result.volumeUnitLabel}${userInputVolume !== 1 ? "s" : ""}`
     : `${fmt(userInputVolume)} ${result.volumeUnitLabel}`
   
+  // Build feeding breakdown description if calculated using daily volume calculator
+  const feedingBreakdownText = result.feedingBreakdown 
+    ? `(${fmt(result.feedingBreakdown.amountPerFeeding)} ${result.feedingBreakdown.feedingUnitLabel} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day = ${volumeDisplay}/day)`
+    : null
+  
   // Calculate kcal per user's unit for display (e.g., kcal/oz)
   // caloriesForPeriod / userInputVolume gives the correct density in the user's unit
   const kcalPerUserUnit = userInputVolume > 0 
@@ -512,18 +530,21 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
   <Card>
   <CardContent className="flex flex-col gap-3 pt-5">
   <p className="text-sm text-foreground leading-relaxed">
-  {isDirectCalorieInput 
-    ? `The patient receives ${fmt(caloriesForPeriod)} calories ${periodLabel} (${densityLabel}), which equals ${fmt(unitsForPeriod)} units${periodLabelShort}. The request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
-    : `The patient receives ${volumeDisplay} ${periodLabel}, the requested ${result.formulaName} provides ${densityLabel} (${fmt(caloriesForPeriod)} calories${periodLabelShort}, ${fmt(unitsForPeriod)} units${periodLabelShort}), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
-  }
-  </p>
+        {isDirectCalorieInput 
+          ? `The patient receives ${fmt(caloriesForPeriod)} calories ${periodLabel} (${densityLabel}), which equals ${fmt(unitsForPeriod)} units${periodLabelShort}. The request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
+          : `The patient receives ${volumeDisplay} ${periodLabel}${feedingBreakdownText ? ` ${feedingBreakdownText}` : ""}, the requested ${result.formulaName} provides ${densityLabel} (${fmt(caloriesForPeriod)} calories${periodLabelShort}, ${fmt(unitsForPeriod)} units${periodLabelShort}), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
+        }
+      </p>
   <Separator />
   <div className="flex flex-col gap-1.5 text-xs text-muted-foreground font-mono">
-  {isDirectCalorieInput ? (
-    <p>{`${fmt(caloriesForPeriod)} calories${periodLabelShort} (direct input)${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
-  ) : (
-    <p>{`${fmt(userInputVolume)} ${result.volumeUnitLabel} x ${fmt(kcalPerUserUnit!)} kcal/${result.volumeUnitLabel} = ${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
-  )}
+          {result.feedingBreakdown && (
+            <p>{`${fmt(result.feedingBreakdown.amountPerFeeding)} ${result.feedingBreakdown.feedingUnitLabel} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day = ${fmt(userInputVolume)} ${result.volumeUnitLabel}/day`}</p>
+          )}
+          {isDirectCalorieInput ? (
+            <p>{`${fmt(caloriesForPeriod)} calories${periodLabelShort} (direct input)${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
+          ) : (
+            <p>{`${fmt(userInputVolume)} ${result.volumeUnitLabel} x ${fmt(kcalPerUserUnit!)} kcal/${result.volumeUnitLabel} = ${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
+          )}
           <p>{`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`}</p>
           <p>{`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`}</p>
         </div>
@@ -539,7 +560,7 @@ function VolumeCalculator({
   densityType,
   packaging,
 }: {
-  onApply: (amount: string, unit: VolumeUnit) => void
+  onApply: (amount: string, unit: VolumeUnit, feedingBreakdown: { amountPerFeeding: number; timesPerDay: number }) => void
   densityType: DensityType
   packaging?: EnteralProduct["packaging"]
 }) {
@@ -651,7 +672,10 @@ function VolumeCalculator({
                 size="sm"
                 className="h-8 text-xs"
                 onClick={() => {
-                  onApply(fmt(calculatedTotal), feedingUnit)
+                  onApply(fmt(calculatedTotal), feedingUnit, {
+                    amountPerFeeding: parseFloat(amountPerFeeding),
+                    timesPerDay: parseFloat(timesPerDay),
+                  })
                   setOpen(false)
                 }}
               >
@@ -681,6 +705,7 @@ export function EnteralCalculator() {
   const [showDensityOverride, setShowDensityOverride] = useState(false)
   const [densityOverride, setDensityOverride] = useState("")
   const [densityOverrideUnit, setDensityOverrideUnit] = useState<"kcal/mL" | "kcal/oz" | "kcal/g">("kcal/mL")
+  const [feedingBreakdown, setFeedingBreakdown] = useState<{ amountPerFeeding: number; timesPerDay: number; feedingUnit: VolumeUnit } | null>(null)
 
   // Derived state
   const selectedProduct = useMemo(
@@ -702,6 +727,7 @@ export function EnteralCalculator() {
     setShowDensityOverride(false)
     setDensityOverride("")
     setDensityOverrideUnit("kcal/mL")
+    setFeedingBreakdown(null)
     setResult(null)
     setErrors([])
   }, [formulaName])
@@ -721,6 +747,7 @@ export function EnteralCalculator() {
     setShowDensityOverride(false)
     setDensityOverride("")
     setDensityOverrideUnit(product?.isPowder ? "kcal/g" : "kcal/mL")
+    setFeedingBreakdown(null)
     setResult(null)
     setErrors([])
   }, [])
@@ -876,23 +903,36 @@ export function EnteralCalculator() {
     const totalUnitsRaw = totalCalories / 100
     const totalUnits = Number.isInteger(totalUnitsRaw) ? totalUnitsRaw : Math.ceil(totalUnitsRaw)
 
-      setResult({
-        dailyMl,
-        dailyVolume: vol,
-        volumeUnit: displayUnit,
-        volumeUnitLabel: displayUnitLabel,
-        densityType: isCalorieInput ? null : effectiveDensityType,
-        densityValue: isCalorieInput ? null : kcal,
-        caloriesPerDay,
-        numDays,
-        totalCalories,
-        totalUnits,
-        formulaName: isCalorieInput ? "Direct Calorie Input" : formulaName,
-        hcpcsCode: isCalorieInput ? hcpcsCode || "N/A" : hcpcsCode,
-        timePeriod: volumeTimePeriod,
-      })
+// Build feeding breakdown info for display if volume was calculated using the calculator
+    const feedingBreakdownForResult: FeedingBreakdown | null = feedingBreakdown 
+      ? {
+          amountPerFeeding: feedingBreakdown.amountPerFeeding,
+          timesPerDay: feedingBreakdown.timesPerDay,
+          feedingUnit: feedingBreakdown.feedingUnit,
+          feedingUnitLabel: feedingBreakdown.feedingUnit.startsWith("pkg-") && selectedProduct?.packaging
+            ? selectedProduct.packaging[parseInt(feedingBreakdown.feedingUnit.replace("pkg-", ""))]?.label || feedingBreakdown.feedingUnit
+            : feedingBreakdown.feedingUnit,
+        }
+      : null
+
+    setResult({
+      dailyMl,
+      dailyVolume: vol,
+      volumeUnit: displayUnit,
+      volumeUnitLabel: displayUnitLabel,
+      densityType: isCalorieInput ? null : effectiveDensityType,
+      densityValue: isCalorieInput ? null : kcal,
+      caloriesPerDay,
+      numDays,
+      totalCalories,
+      totalUnits,
+      formulaName: isCalorieInput ? "Direct Calorie Input" : formulaName,
+      hcpcsCode: isCalorieInput ? hcpcsCode || "N/A" : hcpcsCode,
+      timePeriod: volumeTimePeriod,
+      feedingBreakdown: feedingBreakdownForResult,
+    })
     setErrors([])
-  }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, volumeTimePeriod, startDate, endDate, densityOverride, densityOverrideUnit])
+  }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, volumeTimePeriod, startDate, endDate, densityOverride, densityOverrideUnit, feedingBreakdown])
 
   const handleReset = useCallback(() => {
     setHcpcsCode("")
@@ -903,6 +943,7 @@ export function EnteralCalculator() {
     setShowDensityOverride(false)
     setDensityOverride("")
     setDensityOverrideUnit("kcal/mL")
+    setFeedingBreakdown(null)
     // Preserve valid date span - only clear if dates are invalid
     if (!startDate || !endDate || endDate < startDate) {
       setStartDate(undefined)
@@ -959,8 +1000,9 @@ export function EnteralCalculator() {
             <div className="flex rounded-lg border border-border overflow-hidden w-fit">
               <button
                 type="button"
-                onClick={() => {
+onClick={() => {
                   setVolumeTimePeriod("day")
+                  setFeedingBreakdown(null) // Clear feeding breakdown when manually changing period
                   setResult(null)
                 }}
                 className={cn(
@@ -974,8 +1016,9 @@ export function EnteralCalculator() {
               </button>
               <button
                 type="button"
-                onClick={() => {
+onClick={() => {
                   setVolumeTimePeriod("month")
+                  setFeedingBreakdown(null) // Clear feeding breakdown when manually changing period
                   setResult(null)
                 }}
                 className={cn(
@@ -997,16 +1040,18 @@ export function EnteralCalculator() {
                 min="0"
                 placeholder={`Amount per ${volumeTimePeriod}`}
                 value={volumeAmount}
-                onChange={(e) => {
+onChange={(e) => {
                   setVolumeAmount(e.target.value)
+                  setFeedingBreakdown(null) // Clear feeding breakdown when manually changing volume
                   setResult(null)
                 }}
                 className="flex-1"
               />
               <Select
                 value={volumeUnit}
-                onValueChange={(val: VolumeUnit) => {
+onValueChange={(val: VolumeUnit) => {
                   setVolumeUnit(val)
+                  setFeedingBreakdown(null) // Clear feeding breakdown when manually changing unit
                   setResult(null)
                 }}
               >
@@ -1172,13 +1217,14 @@ export function EnteralCalculator() {
                 <VolumeCalculator
                   densityType={selectedProduct?.isPowder ? "kcal/g" : "kcal/mL"}
                   packaging={selectedProduct?.packaging}
-                  onApply={(amount, unit) => {
+                  onApply={(amount, unit, breakdown) => {
                     setVolumeAmount(amount)
                     setVolumeUnit(unit)
                     setVolumeTimePeriod("day") // Calculator always produces daily values
-                setResult(null)
-              }}
-            />
+                    setFeedingBreakdown({ ...breakdown, feedingUnit: unit })
+                    setResult(null)
+                  }}
+                />
             
             {/* Caloric Density Override */}
             {selectedProduct && volumeUnit !== "kcal" && (
