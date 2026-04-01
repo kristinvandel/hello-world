@@ -503,15 +503,20 @@ function CopyButton({ text, label }: { text: string; label: string }) {
     <Button
       type="button"
       variant="ghost"
-      size="icon"
-      className="h-7 w-7 shrink-0"
+      size="sm"
+      className="h-7 shrink-0 text-xs gap-1.5 px-2"
       onClick={handleCopy}
-      aria-label={label}
     >
       {copied ? (
-        <Check className="size-3.5 text-green-600" />
+        <>
+          <Check className="size-3.5 text-green-600" />
+          <span className="text-green-600">Copied</span>
+        </>
       ) : (
-        <Copy className="size-3.5 text-muted-foreground" />
+        <>
+          <Copy className="size-3.5" />
+          <span>Copy</span>
+        </>
       )}
     </Button>
   )
