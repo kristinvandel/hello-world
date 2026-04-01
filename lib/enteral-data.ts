@@ -149,7 +149,6 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   // Nestle
   { name: "Fibersource HN", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 1.2, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 300 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1200 }, { type: "carton", label: "1500 mL carton", mlPerUnit: 1500, kcalPerUnit: 1800 }] },
   { name: "Isosource HN", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 1.2, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 300 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1200 }, { type: "carton", label: "1500 mL carton", mlPerUnit: 1500, kcalPerUnit: 1800 }] },
-  { name: "Isosource 1.5 Cal", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 375 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1500 }, { type: "carton", label: "1500 mL carton", mlPerUnit: 1500, kcalPerUnit: 2250 }] },
   { name: "Nutren 1.0", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 250 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }, { type: "carton", label: "1500 mL carton", mlPerUnit: 1500, kcalPerUnit: 1500 }] },
   { name: "Nutren 1.0 Fiber", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 250 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }, { type: "carton", label: "1500 mL carton", mlPerUnit: 1500, kcalPerUnit: 1500 }] },
   { name: "Compleat Standard 1.0", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 250 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
@@ -349,7 +348,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Glytactin RTD 15", manufacturer: "Ajinomoto Cambrooke", hcpcsCode: "B4157", kcalPerMl: 0.52, kcalPerGram: null, packaging: [{ type: "bottle", label: "8.5 fl oz bottle", mlPerUnit: 250, kcalPerUnit: 130 }] },
   { name: "Glytactin Complete", manufacturer: "Ajinomoto Cambrooke", hcpcsCode: "B4157", kcalPerMl: null, kcalPerGram: null, packaging: [{ type: "packet", label: "34g packet", gramsPerUnit: 34 }] },
 
-  // ══════════════════════════════════════════════════════════════════════════════
+  // ═════════════════════════════��════════════════════════════════════════════════
   // B4158: Pediatric, intact nutrients
   // ══════════════════════════════════════════════════════════════════════════════
   // Abbott

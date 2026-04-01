@@ -884,13 +884,21 @@ export function EnteralCalculator() {
       {/* Main Form Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl text-primary">
-            <Calculator className="size-5" />
-            Enteral Nutrition Unit Calculator
-          </CardTitle>
-          <CardDescription>
-            Search by HCPCS code or formula name to calculate billing units.
-          </CardDescription>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-1.5">
+              <CardTitle className="flex items-center gap-2 text-xl text-primary">
+                <Calculator className="size-5" />
+                Enteral Nutrition Unit Calculator
+              </CardTitle>
+              <CardDescription>
+                Search by HCPCS code or formula name to calculate billing units.
+              </CardDescription>
+            </div>
+            <Button onClick={handleReset} variant="ghost" size="sm" className="shrink-0 text-muted-foreground hover:text-foreground">
+              <RotateCcw className="mr-1.5 size-3.5" />
+              Reset Form
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           {/* Step 1: HCPCS Code Selection */}
@@ -1262,8 +1270,8 @@ export function EnteralCalculator() {
               Calculate Units
             </Button>
             <Button onClick={handleReset} variant="outline" size="lg">
-              <RotateCcw className="size-4" />
-              <span className="sr-only">Reset</span>
+              <RotateCcw className="mr-2 size-4" />
+              Clear All
             </Button>
           </div>
         </CardContent>
