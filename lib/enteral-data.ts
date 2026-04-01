@@ -188,7 +188,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   // Kate Farms
   { name: "Kate Farms Standard 1.4", manufacturer: "Kate Farms", hcpcsCode: "B4152", kcalPerMl: 1.4, kcalPerGram: null, packaging: [{ type: "carton", label: "11 fl oz carton", mlPerUnit: 325, kcalPerUnit: 455 }] },
 
-  // ═══════════════════════════════════════════════════════���══════════════════════
+  // ═══════════════════════════════════════════════════════�����══════════════════════
   // B4153: Hydrolyzed proteins / Semi-elemental / Elemental
   // ══════════════════════════════════════════════════════════════════════════════
   // Abbott - Adult
@@ -350,7 +350,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
 
   // ═════════════════════════════��════════════════════════════════════════════════
   // B4158: Pediatric, intact nutrients
-  // ══════════════════════════════════════════════════════════════��═══════════════
+  // ══════════════════════════════════════════════════════════════����═══════════════
   // Abbott
   { name: "PediaSure 1.0 Cal", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "can", label: "8 fl oz can", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
   { name: "PediaSure with Fiber", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
@@ -369,7 +369,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Boost Kid Essentials 1.0", manufacturer: "Nestle", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "8.01 fl oz carton", mlPerUnit: 237, kcalPerUnit: 237 }] },
   { name: "Boost Kid Essentials 1.0 with Fiber", manufacturer: "Nestle", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "8.01 fl oz carton", mlPerUnit: 237, kcalPerUnit: 237 }] },
   { name: "Compleat Pediatric Standard", manufacturer: "Nestle", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 250 }] },
-  { name: "Compleat Pediatric Original Reduced Calorie RTF", manufacturer: "Nestle", hcpcsCode: "B4158", kcalPerMl: 0.6, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 150 }] },
+  { name: "Compleat Pediatric Original Reduced Calorie RTF", manufacturer: "Nestle", hcpcsCode: "B4149", kcalPerMl: 0.6, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 150 }] },
   { name: "Good Start (GentlePro)", manufacturer: "Nestle", hcpcsCode: "B4158", kcalPerMl: 0.6763, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "12.7 oz can", gramsPerUnit: 360 }, { type: "can", label: "20 oz can", gramsPerUnit: 567 }] },
   { name: "Good Start Soothe", manufacturer: "Nestle", hcpcsCode: "B4158", kcalPerMl: 0.6763, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "12.4 oz can", gramsPerUnit: 352 }, { type: "can", label: "19.4 oz can", gramsPerUnit: 550 }] },
   { name: "Good Start Gentle", manufacturer: "Nestle", hcpcsCode: "B4158", kcalPerMl: 0.6763, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "12.7 oz can", gramsPerUnit: 360 }, { type: "can", label: "20 oz can", gramsPerUnit: 567 }] },
