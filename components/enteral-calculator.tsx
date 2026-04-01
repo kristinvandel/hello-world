@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react"
 import { differenceInCalendarDays, format, parse, isValid } from "date-fns"
-import { CalendarIcon, ChevronDown, ChevronRight, Calculator, RotateCcw } from "lucide-react"
+import { CalendarIcon, ChevronDown, ChevronRight, Calculator, RotateCcw, Copy, Check } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import {
@@ -486,6 +486,37 @@ function ResultsCard({ result }: { result: CalculationResult }) {
   )
 }
 
+function CopyButton({ text, label }: { text: string; label: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy text:", err)
+    }
+  }
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      className="h-7 w-7 shrink-0"
+      onClick={handleCopy}
+      aria-label={label}
+    >
+      {copied ? (
+        <Check className="size-3.5 text-green-600" />
+      ) : (
+        <Copy className="size-3.5 text-muted-foreground" />
+      )}
+    </Button>
+  )
+}
+
 function ResultsSummary({ result }: { result: CalculationResult }) {
   const unitsPerDay = result.caloriesPerDay / 100
   const isDirectCalorieInput = result.densityType === null
@@ -526,27 +557,49 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
     ? "direct calorie input"
     : `${fmt(kcalPerUserUnit!)} calories per ${result.volumeUnitLabel}`
 
+  // Build the narrative text for display and copying
+  const narrativeText = isDirectCalorieInput 
+    ? `The patient receives ${fmt(caloriesForPeriod)} calories ${periodLabel} (${densityLabel}), which equals ${fmt(unitsForPeriod)} units${periodLabelShort}. The request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
+    : `The patient receives ${volumeDisplay} ${periodLabel}${feedingBreakdownText ? ` ${feedingBreakdownText}` : ""}, the requested ${result.formulaName} provides ${densityLabel} (${fmt(caloriesForPeriod)} calories${periodLabelShort}, ${fmt(unitsForPeriod)} units${periodLabelShort}), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
+
+  // Build the math text for copying
+  const mathLines: string[] = []
+  if (result.feedingBreakdown) {
+    mathLines.push(`${fmt(result.feedingBreakdown.amountPerFeeding)} ${result.feedingBreakdown.feedingUnitLabel} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day = ${fmt(userInputVolume)} ${result.volumeUnitLabel}/day`)
+  }
+  if (isDirectCalorieInput) {
+    mathLines.push(`${fmt(caloriesForPeriod)} calories${periodLabelShort} (direct input)${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`)
+  } else {
+    mathLines.push(`${fmt(userInputVolume)} ${result.volumeUnitLabel} x ${fmt(kcalPerUserUnit!)} kcal/${result.volumeUnitLabel} = ${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`)
+  }
+  mathLines.push(`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`)
+  mathLines.push(`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`)
+  const mathText = mathLines.join("\n")
+
   return (
-  <Card>
-  <CardContent className="flex flex-col gap-3 pt-5">
-  <p className="text-sm text-foreground leading-relaxed">
-        {isDirectCalorieInput 
-          ? `The patient receives ${fmt(caloriesForPeriod)} calories ${periodLabel} (${densityLabel}), which equals ${fmt(unitsForPeriod)} units${periodLabelShort}. The request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
-          : `The patient receives ${volumeDisplay} ${periodLabel}${feedingBreakdownText ? ` ${feedingBreakdownText}` : ""}, the requested ${result.formulaName} provides ${densityLabel} (${fmt(caloriesForPeriod)} calories${periodLabelShort}, ${fmt(unitsForPeriod)} units${periodLabelShort}), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
-        }
-      </p>
-  <Separator />
-  <div className="flex flex-col gap-1.5 text-xs text-muted-foreground font-mono">
-          {result.feedingBreakdown && (
-            <p>{`${fmt(result.feedingBreakdown.amountPerFeeding)} ${result.feedingBreakdown.feedingUnitLabel} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day = ${fmt(userInputVolume)} ${result.volumeUnitLabel}/day`}</p>
-          )}
-          {isDirectCalorieInput ? (
-            <p>{`${fmt(caloriesForPeriod)} calories${periodLabelShort} (direct input)${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
-          ) : (
-            <p>{`${fmt(userInputVolume)} ${result.volumeUnitLabel} x ${fmt(kcalPerUserUnit!)} kcal/${result.volumeUnitLabel} = ${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
-          )}
-          <p>{`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`}</p>
-          <p>{`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`}</p>
+    <Card>
+      <CardContent className="flex flex-col gap-3 pt-5">
+        <div className="flex items-start gap-2">
+          <p className="text-sm text-foreground leading-relaxed flex-1">
+            {narrativeText}
+          </p>
+          <CopyButton text={narrativeText} label="Copy narrative" />
+        </div>
+        <Separator />
+        <div className="flex items-start gap-2">
+          <div className="flex flex-col gap-1.5 text-xs text-muted-foreground font-mono flex-1">
+            {result.feedingBreakdown && (
+              <p>{`${fmt(result.feedingBreakdown.amountPerFeeding)} ${result.feedingBreakdown.feedingUnitLabel} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day = ${fmt(userInputVolume)} ${result.volumeUnitLabel}/day`}</p>
+            )}
+            {isDirectCalorieInput ? (
+              <p>{`${fmt(caloriesForPeriod)} calories${periodLabelShort} (direct input)${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
+            ) : (
+              <p>{`${fmt(userInputVolume)} ${result.volumeUnitLabel} x ${fmt(kcalPerUserUnit!)} kcal/${result.volumeUnitLabel} = ${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
+            )}
+            <p>{`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`}</p>
+            <p>{`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`}</p>
+          </div>
+          <CopyButton text={mathText} label="Copy math" />
         </div>
       </CardContent>
     </Card>
