@@ -382,6 +382,7 @@ interface CalculationResult {
   totalUnits: number
   formulaName: string
   hcpcsCode: string
+  timePeriod: TimePeriod // Whether user entered per day or per month
 }
 
 /** Format a number: rounds to whole if very close, otherwise up to `digits` decimal places */
@@ -475,12 +476,19 @@ function ResultsCard({ result }: { result: CalculationResult }) {
 function ResultsSummary({ result }: { result: CalculationResult }) {
   const unitsPerDay = result.caloriesPerDay / 100
   const isDirectCalorieInput = result.densityType === null
+  const isMonthly = result.timePeriod === "month"
+  const periodLabel = isMonthly ? "per month" : "per day"
+  const periodLabelShort = isMonthly ? "/month" : "/day"
+  
+  // For monthly input, show the original monthly values, but also show daily averages
+  const displayCalories = isMonthly ? result.caloriesPerDay * 30 : result.caloriesPerDay
+  const displayUnits = isMonthly ? unitsPerDay * 30 : unitsPerDay
   
   // Format volume display - use "x" notation for packaging units (e.g., "4 x 8 fl oz bottles")
   const isPackagingUnit = result.volumeUnit.startsWith("pkg-")
   const volumeDisplay = isPackagingUnit 
-    ? `${fmt(result.dailyVolume)} x ${result.volumeUnitLabel}${result.dailyVolume !== 1 ? "s" : ""}`
-    : `${fmt(result.dailyVolume)} ${result.volumeUnitLabel}`
+    ? `${fmt(result.dailyVolume * (isMonthly ? 30 : 1))} x ${result.volumeUnitLabel}${(result.dailyVolume * (isMonthly ? 30 : 1)) !== 1 ? "s" : ""}`
+    : `${fmt(result.dailyVolume * (isMonthly ? 30 : 1))} ${result.volumeUnitLabel}`
   
   // Calculate kcal per user unit for display (e.g., kcal/oz)
   // This gives us the density in the user's chosen unit
@@ -498,16 +506,16 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
   <CardContent className="flex flex-col gap-3 pt-5">
   <p className="text-sm text-foreground leading-relaxed">
   {isDirectCalorieInput 
-    ? `The patient receives ${fmt(result.caloriesPerDay)} calories per day (${densityLabel}), which equals ${fmt(unitsPerDay)} units/day. The request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
-    : `The patient receives ${volumeDisplay} per day, the requested ${result.formulaName} provides ${densityLabel} (${fmt(result.caloriesPerDay)} calories/day, ${fmt(unitsPerDay)} units/day), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
+    ? `The patient receives ${fmt(displayCalories)} calories ${periodLabel} (${densityLabel}), which equals ${fmt(displayUnits)} units${periodLabelShort}. The request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
+    : `The patient receives ${volumeDisplay} ${periodLabel}, the requested ${result.formulaName} provides ${densityLabel} (${fmt(displayCalories)} calories${periodLabelShort}, ${fmt(displayUnits)} units${periodLabelShort}), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
   }
   </p>
   <Separator />
   <div className="flex flex-col gap-1.5 text-xs text-muted-foreground font-mono">
   {isDirectCalorieInput ? (
-    <p>{`${fmt(result.caloriesPerDay)} calories/day (direct input)`}</p>
+    <p>{`${fmt(displayCalories)} calories${periodLabelShort} (direct input)${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
   ) : (
-    <p>{`${fmt(result.dailyVolume)} ${result.volumeUnitLabel} x ${fmt(kcalPerUserUnit!)} kcal/${result.volumeUnitLabel} = ${fmt(result.caloriesPerDay)} calories/day`}</p>
+    <p>{`${fmt(result.dailyVolume * (isMonthly ? 30 : 1))} ${result.volumeUnitLabel} x ${fmt(kcalPerUserUnit!)} kcal/${result.volumeUnitLabel} = ${fmt(displayCalories)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
   )}
           <p>{`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`}</p>
           <p>{`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`}</p>
@@ -861,20 +869,21 @@ export function EnteralCalculator() {
     const totalUnitsRaw = totalCalories / 100
     const totalUnits = Number.isInteger(totalUnitsRaw) ? totalUnitsRaw : Math.ceil(totalUnitsRaw)
 
-  setResult({
-  dailyMl,
-  dailyVolume: vol,
-  volumeUnit: displayUnit,
-  volumeUnitLabel: displayUnitLabel,
-  densityType: isCalorieInput ? null : effectiveDensityType,
-  densityValue: isCalorieInput ? null : kcal,
-  caloriesPerDay,
-  numDays,
-  totalCalories,
-  totalUnits,
-  formulaName: isCalorieInput ? "Direct Calorie Input" : formulaName,
-  hcpcsCode: isCalorieInput ? hcpcsCode || "N/A" : hcpcsCode,
-  })
+      setResult({
+        dailyMl,
+        dailyVolume: vol,
+        volumeUnit: displayUnit,
+        volumeUnitLabel: displayUnitLabel,
+        densityType: isCalorieInput ? null : effectiveDensityType,
+        densityValue: isCalorieInput ? null : kcal,
+        caloriesPerDay,
+        numDays,
+        totalCalories,
+        totalUnits,
+        formulaName: isCalorieInput ? "Direct Calorie Input" : formulaName,
+        hcpcsCode: isCalorieInput ? hcpcsCode || "N/A" : hcpcsCode,
+        timePeriod: volumeTimePeriod,
+      })
     setErrors([])
   }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, volumeTimePeriod, startDate, endDate, densityOverride, densityOverrideUnit])
 
