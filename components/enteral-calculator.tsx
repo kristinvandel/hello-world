@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils"
 import {
   HCPCS_CODES,
   ENTERAL_PRODUCTS,
-  getProductsByCode,
   OZ_TO_ML,
   G_TO_ML,
   type EnteralProduct,
@@ -124,17 +123,35 @@ function HcpcsCodeSelector({
 }
 
 function FormulaSelector({
-  products,
+  hcpcsCode,
   value,
-  onChange,
-  disabled,
+  onSelect,
 }: {
-  products: EnteralProduct[]
+  hcpcsCode: string
   value: string
-  onChange: (name: string) => void
-  disabled: boolean
+  onSelect: (hcpcsCode: string, formulaName: string) => void
 }) {
   const [open, setOpen] = useState(false)
+
+  // Group all products by HCPCS code for display
+  const formulasByCode = useMemo(() => {
+    const grouped: Record<string, EnteralProduct[]> = {}
+    ENTERAL_PRODUCTS.forEach((product) => {
+      if (!grouped[product.hcpcsCode]) {
+        grouped[product.hcpcsCode] = []
+      }
+      grouped[product.hcpcsCode].push(product)
+    })
+    return grouped
+  }, [])
+
+  // If HCPCS is selected, show only those products; otherwise show all
+  const productsToShow = hcpcsCode ? (formulasByCode[hcpcsCode] || []) : ENTERAL_PRODUCTS
+
+  const selectedProduct = useMemo(
+    () => ENTERAL_PRODUCTS.find((p) => p.name === value),
+    [value]
+  )
 
   return (
     <div className="flex flex-col gap-2">
@@ -148,7 +165,6 @@ function FormulaSelector({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            disabled={disabled}
             className="w-full justify-between h-10 font-normal text-left"
           >
             {value ? (
@@ -156,51 +172,84 @@ function FormulaSelector({
                 {value}
                 {" "}
                 <span className="text-muted-foreground text-xs">
-                  ({products.find((p) => p.name === value)?.manufacturer})
+                  ({selectedProduct?.manufacturer})
                 </span>
               </span>
             ) : (
-              <span className="text-muted-foreground">
-                {disabled ? "Select HCPCS code first" : "Search or select a formula..."}
-              </span>
+              <span className="text-muted-foreground">Search or select a formula...</span>
             )}
             <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
           <Command>
-            <CommandInput placeholder="Search formulas..." />
-            <CommandList>
+            <CommandInput placeholder="Search formulas (e.g., Alimentum, Nutramigen)..." />
+            <CommandList className="max-h-[300px]">
               <CommandEmpty>No formula found.</CommandEmpty>
-              <CommandGroup>
-                {products.map((product) => (
-                  <CommandItem
-                    key={product.name}
-                    value={`${product.name} ${product.manufacturer}`}
-                    onSelect={() => {
-                      onChange(product.name)
-                      setOpen(false)
-                    }}
-                  >
-                    <div className="flex flex-col gap-0.5">
-                      <span className="font-medium">{product.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {product.manufacturer}
-                        {product.isPowder && product.kcalPerGram !== null && ` \u2022 ${product.kcalPerGram} kcal/g`}
-                        {product.kcalPerMl !== null && ` \u2022 ${product.kcalPerMl} kcal/mL`}
-                        {product.isPowder && <span className="ml-1 text-primary">(powder)</span>}
-                      </span>
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
+              {hcpcsCode ? (
+                // Show products for selected HCPCS code
+                <CommandGroup heading={`${hcpcsCode} - ${HCPCS_CODES.find(c => c.code === hcpcsCode)?.shortDescription}`}>
+                  {productsToShow.map((product) => (
+                    <CommandItem
+                      key={`${product.hcpcsCode}-${product.name}`}
+                      value={`${product.name} ${product.manufacturer}`}
+                      onSelect={() => {
+                        onSelect(product.hcpcsCode, product.name)
+                        setOpen(false)
+                      }}
+                    >
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-medium">{product.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {product.manufacturer}
+                          {product.isPowder && product.kcalPerGram !== null && ` \u2022 ${product.kcalPerGram} kcal/g`}
+                          {!product.isPowder && product.kcalPerMl !== null && ` \u2022 ${product.kcalPerMl} kcal/mL`}
+                          {product.isPowder && <span className="ml-1 text-primary">(powder)</span>}
+                        </span>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              ) : (
+                // Show all products grouped by HCPCS code
+                Object.entries(formulasByCode).map(([code, products]) => {
+                  const hcpcsInfo = HCPCS_CODES.find((c) => c.code === code)
+                  return (
+                    <CommandGroup 
+                      key={code} 
+                      heading={`${code} - ${hcpcsInfo?.shortDescription || ""}`}
+                    >
+                      {products.map((product) => (
+                        <CommandItem
+                          key={`${product.hcpcsCode}-${product.name}`}
+                          value={`${product.name} ${product.manufacturer} ${product.hcpcsCode}`}
+                          onSelect={() => {
+                            onSelect(product.hcpcsCode, product.name)
+                            setOpen(false)
+                          }}
+                        >
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-medium">{product.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {product.manufacturer}
+                              {product.isPowder && product.kcalPerGram !== null && ` \u2022 ${product.kcalPerGram} kcal/g`}
+                              {!product.isPowder && product.kcalPerMl !== null && ` \u2022 ${product.kcalPerMl} kcal/mL`}
+                              {product.isPowder && <span className="ml-1 text-primary">(powder)</span>}
+                            </span>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )
+                })
+              )}
             </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
-      {products.length > 0 && !disabled && (
+      {hcpcsCode && productsToShow.length > 0 && (
         <p className="text-xs text-muted-foreground">
-          {products.length} formula{products.length !== 1 ? "s" : ""} available for this code
+          {productsToShow.length} formula{productsToShow.length !== 1 ? "s" : ""} available for {hcpcsCode}
         </p>
       )}
     </div>
@@ -601,11 +650,6 @@ export function EnteralCalculator() {
   const [densityOverride, setDensityOverride] = useState("")
 
   // Derived state
-  const availableProducts = useMemo(
-    () => (hcpcsCode ? getProductsByCode(hcpcsCode) : []),
-    [hcpcsCode]
-  )
-  
   const selectedProduct = useMemo(
     () => ENTERAL_PRODUCTS.find((p) => p.name === formulaName && p.hcpcsCode === hcpcsCode),
     [formulaName, hcpcsCode]
@@ -614,18 +658,25 @@ export function EnteralCalculator() {
   // Handlers
   const handleHcpcsChange = useCallback((code: string) => {
     setHcpcsCode(code)
-    setFormulaName("") // Clear formula when code changes
+    // Only clear formula if it doesn't match the new code
+    const currentFormulaMatchesNewCode = ENTERAL_PRODUCTS.some(
+      (p) => p.name === formulaName && p.hcpcsCode === code
+    )
+    if (!currentFormulaMatchesNewCode) {
+      setFormulaName("")
+    }
     setVolumeUnit("mL")
     setShowDensityOverride(false)
     setDensityOverride("")
     setResult(null)
     setErrors([])
-  }, [])
+  }, [formulaName])
 
-  const handleFormulaChange = useCallback((name: string) => {
+  const handleFormulaSelect = useCallback((code: string, name: string) => {
+    setHcpcsCode(code)
     setFormulaName(name)
     
-    const product = ENTERAL_PRODUCTS.find((p) => p.name === name && p.hcpcsCode === hcpcsCode)
+    const product = ENTERAL_PRODUCTS.find((p) => p.name === name && p.hcpcsCode === code)
     // Auto-set volume unit based on product type
     if (product?.isPowder && product.kcalPerGram !== null) {
       setVolumeUnit("g")
@@ -637,7 +688,7 @@ export function EnteralCalculator() {
     setDensityOverride("")
     setResult(null)
     setErrors([])
-  }, [hcpcsCode])
+  }, [])
 
   const handleCalculate = useCallback(() => {
     const newErrors: string[] = []
@@ -827,7 +878,7 @@ export function EnteralCalculator() {
             Enteral Nutrition Unit Calculator
           </CardTitle>
           <CardDescription>
-            Select an HCPCS code, then choose a formula to calculate billing units.
+            Search by HCPCS code or formula name to calculate billing units.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
@@ -839,10 +890,9 @@ export function EnteralCalculator() {
 
           {/* Step 2: Formula Selection */}
           <FormulaSelector
-            products={availableProducts}
+            hcpcsCode={hcpcsCode}
             value={formulaName}
-            onChange={handleFormulaChange}
-            disabled={!hcpcsCode}
+            onSelect={handleFormulaSelect}
           />
 
           <Separator />
