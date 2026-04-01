@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { EnteralCalculator } from "@/components/enteral-calculator"
 
 export default function Page() {
@@ -6,8 +7,14 @@ export default function Page() {
       <div className="flex-1">
         <EnteralCalculator />
       </div>
-      <footer className="mt-12 pb-6 text-center text-sm" style={{ color: "#FF69B4" }}>
-        Made by Kristin Vandeloecht
+      <footer className="mt-12 pb-6 text-center text-sm flex flex-col items-center gap-2">
+        <Link 
+          href="/info" 
+          className="text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+        >
+          References
+        </Link>
+        <span style={{ color: "#FF69B4" }}>Made by Kristin Vandeloecht</span>
       </footer>
     </main>
   )
