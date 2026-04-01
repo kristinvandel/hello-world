@@ -256,6 +256,10 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Kate Farms Renal Support 1.8", manufacturer: "Kate Farms", hcpcsCode: "B4154", kcalPerMl: 1.8, kcalPerGram: null, packaging: [{ type: "carton", label: "11 fl oz carton", mlPerUnit: 325, kcalPerUnit: 585 }] },
   // Hormel
   { name: "Hormel Vital Cuisine", manufacturer: "Hormel", hcpcsCode: "B4154", kcalPerMl: 1.06, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 250 }] },
+  // Mead Johnson - Infant Specialty (Chylothorax/LCHAD)
+  { name: "Enfaport", manufacturer: "Mead Johnson", hcpcsCode: "B4154", kcalPerMl: 1.01, kcalPerGram: null, packaging: [{ type: "bottle", label: "6 fl oz bottle", mlPerUnit: 177, kcalPerUnit: 180 }, { type: "can", label: "8 fl oz can", mlPerUnit: 237, kcalPerUnit: 240 }] },
+  // Nutricia - Fat Malabsorption / Chylothorax / LCHAD
+  { name: "Monogen", manufacturer: "Nutricia", hcpcsCode: "B4154", kcalPerMl: null, kcalPerGram: 4.24, isPowder: true, packaging: [{ type: "can", label: "14.1 oz can (400g)", gramsPerUnit: 400, kcalPerUnit: 1696 }] },
 
   // ══════════════════════════════════════════════════════════════════════════════
   // B4155: Modular/Incomplete nutrients (Additives)
@@ -306,7 +310,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "ProSource Gelatein 20", manufacturer: "Medtrition", hcpcsCode: "B4155", kcalPerMl: 0.88, kcalPerGram: null, packaging: [{ type: "bottle", label: "4 fl oz bottle", mlPerUnit: 118, kcalPerUnit: 104 }] },
   { name: "ProSource TF", manufacturer: "Medtrition", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 3.5, isPowder: true, packaging: [{ type: "packet", label: "11g packet", gramsPerUnit: 11, kcalPerUnit: 39 }] },
 
-  // ══════════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════��══════
   // B4157: Inherited disease of metabolism (Adult)
   // ══════════════════════════════════════════════════════════════════════════════
   // Abbott "-2" powders: All 410 kcal per 100g = 4.1 kcal/g
