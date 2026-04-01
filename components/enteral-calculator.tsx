@@ -349,7 +349,7 @@ function DatePickerField({
 
 type BaseVolumeUnit = "oz" | "mL" | "g" | "kcal"
 type VolumeUnit = BaseVolumeUnit | string // string for packaging units like "pkg-0", "pkg-1", etc.
-type DensityType = "kcal/mL" | "kcal/g"
+type DensityType = "kcal/mL" | "kcal/g" | "kcal/oz"
 type TimePeriod = "day" | "month"
 
 interface CalculationResult {
@@ -648,6 +648,7 @@ export function EnteralCalculator() {
   const [errors, setErrors] = useState<string[]>([])
   const [showDensityOverride, setShowDensityOverride] = useState(false)
   const [densityOverride, setDensityOverride] = useState("")
+  const [densityOverrideUnit, setDensityOverrideUnit] = useState<"kcal/mL" | "kcal/oz" | "kcal/g">("kcal/mL")
 
   // Derived state
   const selectedProduct = useMemo(
@@ -668,6 +669,7 @@ export function EnteralCalculator() {
     setVolumeUnit("mL")
     setShowDensityOverride(false)
     setDensityOverride("")
+    setDensityOverrideUnit("kcal/mL")
     setResult(null)
     setErrors([])
   }, [formulaName])
@@ -686,6 +688,7 @@ export function EnteralCalculator() {
     // Clear any density override when formula changes
     setShowDensityOverride(false)
     setDensityOverride("")
+    setDensityOverrideUnit(product?.isPowder ? "kcal/g" : "kcal/mL")
     setResult(null)
     setErrors([])
   }, [])
@@ -734,6 +737,8 @@ export function EnteralCalculator() {
       // Check if user provided an override
       const overrideValue = densityOverride ? parseFloat(densityOverride) : null
       if (overrideValue !== null && !isNaN(overrideValue) && overrideValue > 0) {
+        // User provided a custom density value - use their unit for display
+        effectiveDensityType = densityOverrideUnit
         effectiveKcalValue = overrideValue
       } else {
         effectiveKcalValue = effectiveDensityType === "kcal/g" 
@@ -825,7 +830,12 @@ export function EnteralCalculator() {
       // Calculate calories based on density type
       if (effectiveDensityType === "kcal/g") {
         caloriesPerDay = dailyGrams * kcal
+      } else if (effectiveDensityType === "kcal/oz") {
+        // Convert dailyMl to oz for calculation
+        const dailyOz = dailyMl / OZ_TO_ML
+        caloriesPerDay = dailyOz * kcal
       } else {
+        // kcal/mL
         caloriesPerDay = dailyMl * kcal
       }
     }
@@ -849,7 +859,7 @@ export function EnteralCalculator() {
   hcpcsCode: isCalorieInput ? hcpcsCode || "N/A" : hcpcsCode,
   })
     setErrors([])
-  }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, volumeTimePeriod, startDate, endDate, densityOverride])
+  }, [hcpcsCode, formulaName, selectedProduct, volumeAmount, volumeUnit, volumeTimePeriod, startDate, endDate, densityOverride, densityOverrideUnit])
 
   const handleReset = useCallback(() => {
     setHcpcsCode("")
@@ -859,6 +869,7 @@ export function EnteralCalculator() {
     setVolumeTimePeriod("day")
     setShowDensityOverride(false)
     setDensityOverride("")
+    setDensityOverrideUnit("kcal/mL")
     // Preserve valid date span - only clear if dates are invalid
     if (!startDate || !endDate || endDate < startDate) {
       setStartDate(undefined)
@@ -1156,6 +1167,7 @@ export function EnteralCalculator() {
                         onClick={() => {
                           setShowDensityOverride(false)
                           setDensityOverride("")
+                          setDensityOverrideUnit(selectedProduct?.isPowder ? "kcal/g" : "kcal/mL")
                           setResult(null)
                         }}
                       >
@@ -1167,7 +1179,7 @@ export function EnteralCalculator() {
                         type="number"
                         step="0.01"
                         min="0"
-                        placeholder={selectedProduct?.isPowder ? "e.g., 4.2" : "e.g., 1.0"}
+                        placeholder={densityOverrideUnit === "kcal/g" ? "e.g., 4.2" : densityOverrideUnit === "kcal/oz" ? "e.g., 20" : "e.g., 1.0"}
                         value={densityOverride}
                         onChange={(e) => {
                           setDensityOverride(e.target.value)
@@ -1175,16 +1187,29 @@ export function EnteralCalculator() {
                         }}
                         className="flex-1 h-8 text-sm"
                       />
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {selectedProduct?.isPowder && selectedProduct?.kcalPerGram !== null ? "kcal/g" : "kcal/mL"}
-                      </span>
+                      <Select
+                        value={densityOverrideUnit}
+                        onValueChange={(value: "kcal/mL" | "kcal/oz" | "kcal/g") => {
+                          setDensityOverrideUnit(value)
+                          setResult(null)
+                        }}
+                      >
+                        <SelectTrigger className="w-[100px] h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="kcal/mL">kcal/mL</SelectItem>
+                          <SelectItem value="kcal/oz">kcal/oz</SelectItem>
+                          <SelectItem value="kcal/g">kcal/g</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     {selectedProduct && (
                       <p className="text-xs text-muted-foreground">
                         Default: {selectedProduct.isPowder && selectedProduct.kcalPerGram !== null 
                           ? `${selectedProduct.kcalPerGram} kcal/g`
                           : selectedProduct.kcalPerMl !== null 
-                            ? `${selectedProduct.kcalPerMl} kcal/mL`
+                            ? `${selectedProduct.kcalPerMl} kcal/mL (${(selectedProduct.kcalPerMl * OZ_TO_ML).toFixed(1)} kcal/oz)`
                             : "Not available"}
                       </p>
                     )}

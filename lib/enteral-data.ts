@@ -257,6 +257,8 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Kate Farms Renal Support 1.8", manufacturer: "Kate Farms", hcpcsCode: "B4154", kcalPerMl: 1.8, kcalPerGram: null, packaging: [{ type: "carton", label: "11 fl oz carton", mlPerUnit: 325, kcalPerUnit: 585 }] },
   // Hormel
   { name: "Hormel Vital Cuisine", manufacturer: "Hormel", hcpcsCode: "B4154", kcalPerMl: 1.06, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 250 }] },
+  // Mead Johnson - Enfaport (for chylothorax, fat malabsorption)
+  { name: "Enfaport", manufacturer: "Mead Johnson", hcpcsCode: "B4154", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "6 fl oz RTF bottle", mlPerUnit: 177, kcalPerUnit: 177 }, { type: "bottle", label: "8 fl oz RTF bottle", mlPerUnit: 237, kcalPerUnit: 237 }] },
 
   // ══════════════════════════════════════════════════════════════════════════════
   // B4155: Modular/Incomplete nutrients (Additives)
