@@ -918,12 +918,17 @@ export function EnteralCalculator() {
       // Calculate volume in base units (before time period conversion)
       let volumeMl: number
       let volumeGrams: number
+      let packagingKcalPerUnit: number | null = null // Track packaging kcalPerUnit for accurate calorie calculation
 
       if (volumeUnit.startsWith("pkg-")) {
         // Handle packaging units
         const pkgIdx = parseInt(volumeUnit.replace("pkg-", ""))
         const pkg = selectedProduct?.packaging?.[pkgIdx]
         if (pkg) {
+          // Store kcalPerUnit for accurate calorie calculation (avoids rounding errors from kcalPerMl)
+          if (pkg.kcalPerUnit) {
+            packagingKcalPerUnit = pkg.kcalPerUnit
+          }
           if (pkg.mlPerUnit) {
             volumeMl = vol * pkg.mlPerUnit
             volumeGrams = volumeMl * G_TO_ML
@@ -961,7 +966,12 @@ export function EnteralCalculator() {
       }
 
       // Calculate calories based on density type
-      if (effectiveDensityType === "kcal/g") {
+      // For packaging units with kcalPerUnit, use that directly for accuracy (avoids rounding errors)
+      if (packagingKcalPerUnit !== null) {
+        // Use packaging kcalPerUnit directly: vol is number of packages, packagingKcalPerUnit is kcal per package
+        const dailyPackages = volumeTimePeriod === "month" ? vol / 30 : vol
+        caloriesPerDay = dailyPackages * packagingKcalPerUnit
+      } else if (effectiveDensityType === "kcal/g") {
         caloriesPerDay = dailyGrams * kcal
       } else if (effectiveDensityType === "kcal/oz") {
         // Convert dailyMl to oz for calculation
