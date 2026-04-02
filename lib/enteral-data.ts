@@ -157,7 +157,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Impact 1.5", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 375 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1500 }] },
   { name: "Boost", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 1.06, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 250 }] },
   { name: "Boost High Protein", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 240 }] },
-  { name: "Boost Original", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 240 }] },
+  { name: "Boost Original", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 1.06, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 250 }] },
   { name: "Boost Glucose Control", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 0.95, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 190 }] },
   { name: "Resource 2.0", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 2.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 474 }] },
   // Kate Farms
