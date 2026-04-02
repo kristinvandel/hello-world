@@ -558,9 +558,12 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
     : result.densityValue
   
   // Build the density label using the user's unit
+  // For packaging units, wrap the package size in parentheses for clarity (e.g., "250 calories per (8 fl oz bottle)")
   const densityLabel = isDirectCalorieInput
     ? "direct calorie input"
-    : `${fmt(kcalPerUserUnit!)} calories per ${result.volumeUnitLabel}`
+    : isPackagingUnit
+      ? `${fmt(kcalPerUserUnit!)} calories per (${result.volumeUnitLabel})`
+      : `${fmt(kcalPerUserUnit!)} calories per ${result.volumeUnitLabel}`
 
   // Build the narrative text for display and copying
   const narrativeText = isDirectCalorieInput 
@@ -568,14 +571,20 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
     : `The patient receives ${volumeDisplay} ${periodLabel}${feedingBreakdownText ? ` ${feedingBreakdownText}` : ""}, the requested ${result.formulaName} provides ${densityLabel} (${fmt(caloriesForPeriod)} calories${periodLabelShort}, ${fmt(unitsForPeriod)} units${periodLabelShort}), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
 
   // Build the math text for copying
+  // For packaging units, wrap the package label in parentheses for clarity
   const mathLines: string[] = []
-  if (result.feedingBreakdown) {
-    mathLines.push(`${fmt(result.feedingBreakdown.amountPerFeeding)} ${result.feedingBreakdown.feedingUnitLabel} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day = ${fmt(userInputVolume)} ${result.volumeUnitLabel}/day`)
+  const unitLabelForMath = isPackagingUnit ? `(${result.volumeUnitLabel})` : result.volumeUnitLabel
+  const feedingUnitLabelForMath = result.feedingBreakdown 
+    ? (result.feedingBreakdown.feedingUnit.startsWith("pkg-") ? `(${result.feedingBreakdown.feedingUnitLabel})` : result.feedingBreakdown.feedingUnitLabel)
+    : null
+  
+  if (result.feedingBreakdown && feedingUnitLabelForMath) {
+    mathLines.push(`${fmt(result.feedingBreakdown.amountPerFeeding)} ${feedingUnitLabelForMath} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day = ${fmt(userInputVolume)} ${unitLabelForMath}/day`)
   }
   if (isDirectCalorieInput) {
     mathLines.push(`${fmt(caloriesForPeriod)} calories${periodLabelShort} (direct input)${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`)
   } else {
-    mathLines.push(`${fmt(userInputVolume)} ${result.volumeUnitLabel} x ${fmt(kcalPerUserUnit!)} kcal/${result.volumeUnitLabel} = ${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`)
+    mathLines.push(`${fmt(userInputVolume)} ${unitLabelForMath} x ${fmt(kcalPerUserUnit!)} kcal/${unitLabelForMath} = ${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`)
   }
   mathLines.push(`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`)
   mathLines.push(`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`)
@@ -593,13 +602,13 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
         <Separator />
         <div className="flex items-start gap-2">
           <div className="flex flex-col gap-1.5 text-xs text-muted-foreground font-mono flex-1">
-            {result.feedingBreakdown && (
-              <p>{`${fmt(result.feedingBreakdown.amountPerFeeding)} ${result.feedingBreakdown.feedingUnitLabel} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day = ${fmt(userInputVolume)} ${result.volumeUnitLabel}/day`}</p>
+            {result.feedingBreakdown && feedingUnitLabelForMath && (
+              <p>{`${fmt(result.feedingBreakdown.amountPerFeeding)} ${feedingUnitLabelForMath} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day = ${fmt(userInputVolume)} ${unitLabelForMath}/day`}</p>
             )}
             {isDirectCalorieInput ? (
               <p>{`${fmt(caloriesForPeriod)} calories${periodLabelShort} (direct input)${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
             ) : (
-              <p>{`${fmt(userInputVolume)} ${result.volumeUnitLabel} x ${fmt(kcalPerUserUnit!)} kcal/${result.volumeUnitLabel} = ${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
+              <p>{`${fmt(userInputVolume)} ${unitLabelForMath} x ${fmt(kcalPerUserUnit!)} kcal/${unitLabelForMath} = ${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
             )}
             <p>{`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`}</p>
             <p>{`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`}</p>
