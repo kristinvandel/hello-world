@@ -589,6 +589,9 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
   mathLines.push(`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`)
   mathLines.push(`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`)
   const mathText = mathLines.join("\n")
+  
+  // Combined text for copying both summaries at once
+  const combinedText = `${narrativeText}\n\n${mathText}`
 
   return (
     <Card>
@@ -614,6 +617,10 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
             <p>{`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`}</p>
           </div>
           <CopyButton text={mathText} label="Copy math" />
+        </div>
+        <Separator />
+        <div className="flex justify-end">
+          <CopyButton text={combinedText} label="Copy both" />
         </div>
       </CardContent>
     </Card>
