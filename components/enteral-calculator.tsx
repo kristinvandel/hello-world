@@ -589,6 +589,9 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
   mathLines.push(`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`)
   mathLines.push(`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`)
   const mathText = mathLines.join("\n")
+  
+  // Combined text for copying both summaries at once
+  const combinedText = `${narrativeText}\n\n${mathText}`
 
   return (
     <Card>
@@ -614,6 +617,10 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
             <p>{`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`}</p>
           </div>
           <CopyButton text={mathText} label="Copy math" />
+        </div>
+        <Separator />
+        <div className="flex justify-end">
+          <CopyButton text={combinedText} label="Copy all" />
         </div>
       </CardContent>
     </Card>
@@ -911,12 +918,17 @@ export function EnteralCalculator() {
       // Calculate volume in base units (before time period conversion)
       let volumeMl: number
       let volumeGrams: number
+      let packagingKcalPerUnit: number | null = null // Track packaging kcalPerUnit for accurate calorie calculation
 
       if (volumeUnit.startsWith("pkg-")) {
         // Handle packaging units
         const pkgIdx = parseInt(volumeUnit.replace("pkg-", ""))
         const pkg = selectedProduct?.packaging?.[pkgIdx]
         if (pkg) {
+          // Store kcalPerUnit for accurate calorie calculation (avoids rounding errors from kcalPerMl)
+          if (pkg.kcalPerUnit) {
+            packagingKcalPerUnit = pkg.kcalPerUnit
+          }
           if (pkg.mlPerUnit) {
             volumeMl = vol * pkg.mlPerUnit
             volumeGrams = volumeMl * G_TO_ML
@@ -954,7 +966,12 @@ export function EnteralCalculator() {
       }
 
       // Calculate calories based on density type
-      if (effectiveDensityType === "kcal/g") {
+      // For packaging units with kcalPerUnit, use that directly for accuracy (avoids rounding errors)
+      if (packagingKcalPerUnit !== null) {
+        // Use packaging kcalPerUnit directly: vol is number of packages, packagingKcalPerUnit is kcal per package
+        const dailyPackages = volumeTimePeriod === "month" ? vol / 30 : vol
+        caloriesPerDay = dailyPackages * packagingKcalPerUnit
+      } else if (effectiveDensityType === "kcal/g") {
         caloriesPerDay = dailyGrams * kcal
       } else if (effectiveDensityType === "kcal/oz") {
         // Convert dailyMl to oz for calculation
@@ -1230,6 +1247,16 @@ onValueChange={(val: VolumeUnit) => {
                     }
                   }
                   
+                  // Check for packaging kcalPerUnit for accurate calorie display
+                  let packagingKcalPerUnit: number | null = null
+                  if (volumeUnit.startsWith("pkg-")) {
+                    const pkgIdx = parseInt(volumeUnit.replace("pkg-", ""))
+                    const pkg = selectedProduct?.packaging?.[pkgIdx]
+                    if (pkg?.kcalPerUnit) {
+                      packagingKcalPerUnit = pkg.kcalPerUnit
+                    }
+                  }
+                  
                   const dailyMl = baseMl !== null ? (volumeTimePeriod === "month" ? baseMl / 30 : baseMl) : null
                   const dailyGrams = baseGrams !== null ? (volumeTimePeriod === "month" ? baseGrams / 30 : baseGrams) : null
                   
@@ -1248,7 +1275,11 @@ onValueChange={(val: VolumeUnit) => {
                     : selectedProduct?.kcalPerMl
                   
                   let dailyKcal: number | null = null
-                  if (effectiveKcalValue) {
+                  // Use packaging kcalPerUnit for accurate calorie display when available
+                  if (packagingKcalPerUnit !== null) {
+                    const dailyPackages = volumeTimePeriod === "month" ? amount / 30 : amount
+                    dailyKcal = dailyPackages * packagingKcalPerUnit
+                  } else if (effectiveKcalValue) {
                     if (effectiveDensityType === "kcal/g" && dailyGrams !== null) {
                       dailyKcal = dailyGrams * effectiveKcalValue
                     } else if (dailyMl !== null) {
