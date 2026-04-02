@@ -1247,6 +1247,16 @@ onValueChange={(val: VolumeUnit) => {
                     }
                   }
                   
+                  // Check for packaging kcalPerUnit for accurate calorie display
+                  let packagingKcalPerUnit: number | null = null
+                  if (volumeUnit.startsWith("pkg-")) {
+                    const pkgIdx = parseInt(volumeUnit.replace("pkg-", ""))
+                    const pkg = selectedProduct?.packaging?.[pkgIdx]
+                    if (pkg?.kcalPerUnit) {
+                      packagingKcalPerUnit = pkg.kcalPerUnit
+                    }
+                  }
+                  
                   const dailyMl = baseMl !== null ? (volumeTimePeriod === "month" ? baseMl / 30 : baseMl) : null
                   const dailyGrams = baseGrams !== null ? (volumeTimePeriod === "month" ? baseGrams / 30 : baseGrams) : null
                   
@@ -1265,7 +1275,11 @@ onValueChange={(val: VolumeUnit) => {
                     : selectedProduct?.kcalPerMl
                   
                   let dailyKcal: number | null = null
-                  if (effectiveKcalValue) {
+                  // Use packaging kcalPerUnit for accurate calorie display when available
+                  if (packagingKcalPerUnit !== null) {
+                    const dailyPackages = volumeTimePeriod === "month" ? amount / 30 : amount
+                    dailyKcal = dailyPackages * packagingKcalPerUnit
+                  } else if (effectiveKcalValue) {
                     if (effectiveDensityType === "kcal/g" && dailyGrams !== null) {
                       dailyKcal = dailyGrams * effectiveKcalValue
                     } else if (dailyMl !== null) {
