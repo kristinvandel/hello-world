@@ -620,7 +620,7 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
         </div>
         <Separator />
         <div className="flex justify-end">
-          <CopyButton text={combinedText} label="Copy both" />
+          <CopyButton text={combinedText} label="Copy all" />
         </div>
       </CardContent>
     </Card>
