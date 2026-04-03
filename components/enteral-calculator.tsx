@@ -863,7 +863,13 @@ export function EnteralCalculator() {
         : false
       const userEnteringPowderUnits = volumeUnit === "g" || isPowderPackaging
       
-      effectiveDensityType = userEnteringPowderUnits && selectedProduct?.kcalPerGram !== null
+      // For powder formulas that only have kcalPerGram (kcalPerMl is null), 
+      // we must use kcal/g even if user enters oz or mL - we'll convert
+      const isPowderOnlyFormula = selectedProduct?.isPowder && 
+        selectedProduct?.kcalPerGram !== null && 
+        selectedProduct?.kcalPerMl === null
+      
+      effectiveDensityType = (userEnteringPowderUnits && selectedProduct?.kcalPerGram !== null) || isPowderOnlyFormula
         ? "kcal/g" 
         : "kcal/mL"
       
@@ -1185,7 +1191,11 @@ onValueChange={(val: VolumeUnit) => {
                   // Handle calorie input
                   if (volumeUnit === "kcal") {
                     const dailyKcal = dailyAmount
-                    const effectiveDensityType = selectedProduct?.isPowder && selectedProduct?.kcalPerGram !== null 
+                    // For powder formulas that only have kcalPerGram (kcalPerMl is null), use kcal/g
+                    const isPowderOnlyFormula = selectedProduct?.isPowder && 
+                      selectedProduct?.kcalPerGram !== null && 
+                      selectedProduct?.kcalPerMl === null
+                    const effectiveDensityType = (selectedProduct?.isPowder && selectedProduct?.kcalPerGram !== null) || isPowderOnlyFormula
                       ? "kcal/g" 
                       : "kcal/mL"
                     const effectiveKcalValue = effectiveDensityType === "kcal/g" 
@@ -1227,9 +1237,11 @@ onValueChange={(val: VolumeUnit) => {
                   
                   if (volumeUnit === "oz") {
                     baseMl = amount * OZ_TO_ML
+                    baseGrams = baseMl * G_TO_ML // Also compute grams for powder-only formulas
                     unitLabel = "oz"
                   } else if (volumeUnit === "mL") {
                     baseMl = amount
+                    baseGrams = amount * G_TO_ML // Also compute grams for powder-only formulas
                     unitLabel = "mL"
                   } else if (volumeUnit === "g") {
                     baseGrams = amount
@@ -1241,6 +1253,7 @@ onValueChange={(val: VolumeUnit) => {
                       unitLabel = pkg.label
                       if (pkg.mlPerUnit) {
                         baseMl = amount * pkg.mlPerUnit
+                        baseGrams = baseMl * G_TO_ML // Also compute grams for powder-only formulas
                       } else if (pkg.gramsPerUnit) {
                         baseGrams = amount * pkg.gramsPerUnit
                       }
@@ -1267,7 +1280,13 @@ onValueChange={(val: VolumeUnit) => {
                     : false
                   const userEnteringPowderUnits = volumeUnit === "g" || isPowderPackaging
                   
-                  const effectiveDensityType = userEnteringPowderUnits && selectedProduct?.kcalPerGram !== null
+                  // For powder formulas that only have kcalPerGram (kcalPerMl is null), 
+                  // we must use kcal/g even if user enters oz or mL
+                  const isPowderOnlyFormula = selectedProduct?.isPowder && 
+                    selectedProduct?.kcalPerGram !== null && 
+                    selectedProduct?.kcalPerMl === null
+                  
+                  const effectiveDensityType = (userEnteringPowderUnits && selectedProduct?.kcalPerGram !== null) || isPowderOnlyFormula
                     ? "kcal/g" 
                     : "kcal/mL"
                   const effectiveKcalValue = effectiveDensityType === "kcal/g" 
