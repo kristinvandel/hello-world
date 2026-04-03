@@ -1439,88 +1439,34 @@ onValueChange={(val: VolumeUnit) => {
             </p>
           )}
 
-          {/* Weekly/Monthly Breakdown */}
-          {(() => {
-            const amount = parseFloat(volumeAmount)
-            if (isNaN(amount) || amount <= 0 || !selectedProduct) return null
-            
-            // Calculate daily amount based on time period
-            const dailyAmount = volumeTimePeriod === "month" ? amount / 30 : amount
-            
-            // Calculate kcal per unit for the selected formula
-            const isPowderPackaging = volumeUnit.startsWith("pkg-") && selectedProduct?.packaging
-              ? selectedProduct.packaging[parseInt(volumeUnit.replace("pkg-", ""))]?.gramsPerUnit !== undefined
-              : false
-            const userEnteringPowderUnits = volumeUnit === "g" || isPowderPackaging
-            const effectiveDensityType = userEnteringPowderUnits && selectedProduct?.kcalPerGram !== null
-              ? "kcal/g" 
-              : "kcal/mL"
-            const effectiveKcalValue = effectiveDensityType === "kcal/g" 
-              ? selectedProduct?.kcalPerGram 
-              : selectedProduct?.kcalPerMl
-            
-            // Convert daily amount to base unit (mL or g) for kcal calculation
-            let dailyKcal: number | null = null
-            if (effectiveKcalValue !== null && effectiveKcalValue !== undefined) {
-              if (volumeUnit === "kcal") {
-                dailyKcal = dailyAmount
-              } else if (volumeUnit === "oz") {
-                dailyKcal = dailyAmount * OZ_TO_ML * (selectedProduct?.kcalPerMl ?? 0)
-              } else if (volumeUnit === "mL") {
-                dailyKcal = dailyAmount * (selectedProduct?.kcalPerMl ?? 0)
-              } else if (volumeUnit === "g") {
-                dailyKcal = dailyAmount * (selectedProduct?.kcalPerGram ?? 0)
-              } else if (volumeUnit.startsWith("pkg-")) {
-                const pkgIdx = parseInt(volumeUnit.replace("pkg-", ""))
-                const pkg = selectedProduct?.packaging?.[pkgIdx]
-                if (pkg?.mlPerUnit) {
-                  dailyKcal = dailyAmount * pkg.mlPerUnit * (selectedProduct?.kcalPerMl ?? 0)
-                } else if (pkg?.gramsPerUnit) {
-                  dailyKcal = dailyAmount * pkg.gramsPerUnit * (selectedProduct?.kcalPerGram ?? 0)
-                }
-              }
-            }
-            
-            const unitLabel = volumeUnit === "kcal" 
-              ? "kcal"
-              : volumeUnit.startsWith("pkg-") 
-                ? selectedProduct?.packaging?.[parseInt(volumeUnit.replace("pkg-", ""))]?.label || volumeUnit
-                : volumeUnit
-            
-            const weeklyAmount = dailyAmount * 7
-            const monthlyAmount = dailyAmount * 30
-            const weeklyKcal = dailyKcal !== null ? dailyKcal * 7 : null
-            const monthlyKcal = dailyKcal !== null ? dailyKcal * 30 : null
+          {/* Date Range Breakdown */}
+          {startDate && endDate && endDate >= startDate && (() => {
+            const totalDays = differenceInCalendarDays(endDate, startDate) + 1
+            const weeks = Math.floor(totalDays / 7)
+            const remainingDays = totalDays % 7
+            const months = Math.floor(totalDays / 30)
+            const daysAfterMonths = totalDays % 30
             
             return (
               <div className="rounded-lg border bg-muted/30 p-4 -mt-2">
-                <p className="text-sm font-medium mb-2">Volume Breakdown</p>
+                <p className="text-sm font-medium mb-2">Date Range Breakdown</p>
                 <div className="grid grid-cols-1 gap-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Daily:</span>
+                    <span className="text-muted-foreground">Total Days:</span>
+                    <span>{totalDays} day{totalDays !== 1 ? "s" : ""}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">In Weeks:</span>
                     <span>
-                      {fmt(dailyAmount)} {unitLabel}
-                      {dailyKcal !== null && volumeUnit !== "kcal" && (
-                        <span className="text-primary ml-2">({fmt(dailyKcal)} kcal)</span>
-                      )}
+                      {weeks} week{weeks !== 1 ? "s" : ""}
+                      {remainingDays > 0 && `, ${remainingDays} day${remainingDays !== 1 ? "s" : ""}`}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Weekly:</span>
+                    <span className="text-muted-foreground">In Months:</span>
                     <span>
-                      {fmt(weeklyAmount)} {unitLabel}
-                      {weeklyKcal !== null && volumeUnit !== "kcal" && (
-                        <span className="text-primary ml-2">({fmt(weeklyKcal)} kcal)</span>
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Monthly:</span>
-                    <span>
-                      {fmt(monthlyAmount)} {unitLabel}
-                      {monthlyKcal !== null && volumeUnit !== "kcal" && (
-                        <span className="text-primary ml-2">({fmt(monthlyKcal)} kcal)</span>
-                      )}
+                      {months} month{months !== 1 ? "s" : ""}
+                      {daysAfterMonths > 0 && `, ${daysAfterMonths} day${daysAfterMonths !== 1 ? "s" : ""}`}
                     </span>
                   </div>
                 </div>
