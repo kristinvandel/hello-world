@@ -179,7 +179,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Ensure Compact", manufacturer: "Abbott", hcpcsCode: "B4152", kcalPerMl: 2.2, kcalPerGram: null, packaging: [{ type: "bottle", label: "4 fl oz bottle", mlPerUnit: 118, kcalPerUnit: 220 }] },
   { name: "TwoCal HN", manufacturer: "Abbott", hcpcsCode: "B4152", kcalPerMl: 2.0, kcalPerGram: null, packaging: [{ type: "can", label: "8 fl oz can", mlPerUnit: 237, kcalPerUnit: 474 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 2000 }] },
   // Nestle
-  { name: "Nutren 1.5", manufacturer: "Nestle", hcpcsCode: "B4152", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 380 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1500 }] },
+  { name: "Nutren 1.5", manufacturer: "Nestle", hcpcsCode: "B4152", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 375 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1500 }] },
   { name: "Nutren 2.0", manufacturer: "Nestle", hcpcsCode: "B4152", kcalPerMl: 2.0, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 500 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 2000 }] },
   { name: "Boost Plus", manufacturer: "Nestle", hcpcsCode: "B4152", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 360 }] },
   { name: "Boost VHC (Very High Calorie)", manufacturer: "Nestle", hcpcsCode: "B4152", kcalPerMl: 2.3, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 560 }] },
@@ -243,7 +243,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Nutren Renal", manufacturer: "Nestle", hcpcsCode: "B4154", kcalPerMl: 2.0, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 500 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 2000 }] },
   { name: "Renalcal", manufacturer: "Nestle", hcpcsCode: "B4154", kcalPerMl: 2.0, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 500 }] },
   // Nestle - Pulmonary
-  { name: "Nutren Pulmonary", manufacturer: "Nestle", hcpcsCode: "B4154", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 370 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1500 }] },
+  { name: "Nutren Pulmonary", manufacturer: "Nestle", hcpcsCode: "B4154", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 375 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1500 }] },
   { name: "NutriHep", manufacturer: "Nestle", hcpcsCode: "B4154", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 375 }] },
   // Nestle - Diabetes/Glucose Control
   { name: "Diabetisource AC", manufacturer: "Nestle", hcpcsCode: "B4154", kcalPerMl: 1.2, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 300 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1200 }, { type: "carton", label: "1500 mL carton", mlPerUnit: 1500, kcalPerUnit: 1800 }] },
