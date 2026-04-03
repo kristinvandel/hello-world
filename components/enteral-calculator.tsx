@@ -1259,6 +1259,8 @@ onValueChange={(val: VolumeUnit) => {
                   
                   const dailyMl = baseMl !== null ? (volumeTimePeriod === "month" ? baseMl / 30 : baseMl) : null
                   const dailyGrams = baseGrams !== null ? (volumeTimePeriod === "month" ? baseGrams / 30 : baseGrams) : null
+                  // Keep oz as primary unit when user inputs oz
+                  const dailyOz = volumeUnit === "oz" ? (volumeTimePeriod === "month" ? amount / 30 : amount) : (dailyMl !== null ? dailyMl / OZ_TO_ML : null)
                   
                   // Calculate estimated calories
                   // Use kcal/g ONLY when user is entering grams or powder packaging
@@ -1297,10 +1299,16 @@ onValueChange={(val: VolumeUnit) => {
                           = {fmt(dailyAmount)} {volumeUnit.startsWith("pkg-") ? unitLabel : volumeUnit} per day (avg)
                         </span>
                       )}
-                      {dailyMl !== null && volumeUnit !== "mL" && (
+                      {/* Show oz conversion only when user entered mL */}
+                      {volumeUnit === "mL" && dailyOz !== null && (
+                        <span>= {fmt(dailyOz)} oz per day</span>
+                      )}
+                      {/* Show mL conversion only when user entered oz */}
+                      {volumeUnit === "oz" && dailyMl !== null && (
                         <span>= {fmt(dailyMl)} mL per day</span>
                       )}
-                      {dailyGrams !== null && volumeUnit !== "g" && (
+                      {/* Show grams only for powder packaging inputs (not direct gram input, not liquid volume inputs) */}
+                      {dailyGrams !== null && volumeUnit.startsWith("pkg-") && selectedProduct?.packaging?.[parseInt(volumeUnit.replace("pkg-", ""))]?.gramsPerUnit && (
                         <span>= {fmt(dailyGrams)} g per day</span>
                       )}
                       {dailyKcal !== null && (
