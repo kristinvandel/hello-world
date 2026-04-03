@@ -567,7 +567,7 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
 
   // Build the narrative text for display and copying
   const narrativeText = isDirectCalorieInput 
-    ? `The patient receives ${fmt(caloriesForPeriod)} calories ${periodLabel} (${densityLabel}), which equals ${fmt(unitsForPeriod)} units${periodLabelShort}. The request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
+    ? `The patient receives ${fmt(caloriesForPeriod)} calories ${periodLabel}, which equals ${fmt(unitsForPeriod)} units${periodLabelShort}. The request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
     : `The patient receives ${volumeDisplay} ${periodLabel}${feedingBreakdownText ? ` ${feedingBreakdownText}` : ""}, the requested ${result.formulaName} provides ${densityLabel} (${fmt(caloriesForPeriod)} calories${periodLabelShort}, ${fmt(unitsForPeriod)} units${periodLabelShort}), the request is for ${result.numDays} day${result.numDays !== 1 ? "s" : ""}, therefore ${fmt(result.totalUnits)} units per requested date span are required.`
 
   // Build the math text for copying
