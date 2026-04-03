@@ -115,12 +115,12 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   // ══════════════════════════════════════════════════════════════════════════════
   { name: "Compleat Organic Blends (Chicken Garden)", manufacturer: "Nestle", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "pouch", label: "10.1 fl oz pouch", mlPerUnit: 300, kcalPerUnit: 300 }] },
   { name: "Compleat Organic Blends (Plant-Based)", manufacturer: "Nestle", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "pouch", label: "10.1 fl oz pouch", mlPerUnit: 300, kcalPerUnit: 300 }] },
-  { name: "Compleat Organic Blends (Pediatric Chicken)", manufacturer: "Nestle", hcpcsCode: "B4149", kcalPerMl: 1.2, kcalPerGram: null, packaging: [{ type: "pouch", label: "10.1 fl oz pouch", mlPerUnit: 300, kcalPerUnit: 360 }] },
-  { name: "Compleat Organic Blends (Pediatric Plant)", manufacturer: "Nestle", hcpcsCode: "B4149", kcalPerMl: 1.2, kcalPerGram: null, packaging: [{ type: "pouch", label: "10.1 fl oz pouch", mlPerUnit: 300, kcalPerUnit: 360 }] },
+  { name: "Compleat Organic Blends (Pediatric Chicken)", manufacturer: "Nestle", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "pouch", label: "10.1 fl oz pouch", mlPerUnit: 300, kcalPerUnit: 360 }] },
+  { name: "Compleat Organic Blends (Pediatric Plant)", manufacturer: "Nestle", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "pouch", label: "10.1 fl oz pouch", mlPerUnit: 300, kcalPerUnit: 360 }] },
   { name: "Kate Farms Organic Standard 1.0 (Vanilla)", manufacturer: "Kate Farms", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "11 fl oz carton", mlPerUnit: 325, kcalPerUnit: 325 }] },
   { name: "Kate Farms Organic Standard 1.0 (Chocolate)", manufacturer: "Kate Farms", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "11 fl oz carton", mlPerUnit: 325, kcalPerUnit: 325 }] },
-  { name: "Liquid Hope", manufacturer: "Functional Formularies", hcpcsCode: "B4149", kcalPerMl: 1.27, kcalPerGram: null, packaging: [{ type: "pouch", label: "12 fl oz pouch", mlPerUnit: 355, kcalPerUnit: 450 }] },
-  { name: "Liquid Hope Peptide", manufacturer: "Functional Formularies", hcpcsCode: "B4149", kcalPerMl: 1.27, kcalPerGram: null, packaging: [{ type: "pouch", label: "12 fl oz pouch", mlPerUnit: 355, kcalPerUnit: 450 }] },
+  { name: "Liquid Hope", manufacturer: "Functional Formularies", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "pouch", label: "12 fl oz pouch", mlPerUnit: 355, kcalPerUnit: 450 }] },
+  { name: "Liquid Hope Peptide", manufacturer: "Functional Formularies", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "pouch", label: "12 fl oz pouch", mlPerUnit: 355, kcalPerUnit: 450 }] },
   { name: "Nourish", manufacturer: "Functional Formularies", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "pouch", label: "12 fl oz pouch", mlPerUnit: 355, kcalPerUnit: 355 }] },
   { name: "Nourish Pediatric", manufacturer: "Functional Formularies", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "pouch", label: "12 fl oz pouch", mlPerUnit: 355, kcalPerUnit: 355 }] },
   { name: "Real Food Blends (Salmon/Oats/Squash)", manufacturer: "Real Food Blends", hcpcsCode: "B4149", kcalPerMl: 0.7, kcalPerGram: null, packaging: [{ type: "pouch", label: "9.4 fl oz pouch", mlPerUnit: 278, kcalPerUnit: 195 }] },
@@ -144,8 +144,8 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Ensure with Fiber", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.1, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 261 }, { type: "can", label: "8 fl oz can", mlPerUnit: 237, kcalPerUnit: 261 }] },
   { name: "Ensure High Protein", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }] },
   { name: "Ensure Original", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 1.06, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 250 }] },
-  { name: "Ensure Clear", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 0.61, kcalPerGram: null, packaging: [{ type: "bottle", label: "10 fl oz bottle", mlPerUnit: 296, kcalPerUnit: 180 }] },
-  { name: "Ensure Max Protein", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 0.46, kcalPerGram: null, packaging: [{ type: "bottle", label: "11 fl oz bottle", mlPerUnit: 325, kcalPerUnit: 150 }] },
+  { name: "Ensure Clear", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 0.9, kcalPerGram: null, packaging: [{ type: "bottle", label: "10 fl oz bottle", mlPerUnit: 296, kcalPerUnit: 180 }] },
+  { name: "Ensure Max Protein", manufacturer: "Abbott", hcpcsCode: "B4150", kcalPerMl: 0.68, kcalPerGram: null, packaging: [{ type: "bottle", label: "11 fl oz bottle", mlPerUnit: 325, kcalPerUnit: 150 }] },
   // Nestle
   { name: "Fibersource HN", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 1.2, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 300 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1200 }, { type: "carton", label: "1500 mL carton", mlPerUnit: 1500, kcalPerUnit: 1800 }] },
   { name: "Isosource HN", manufacturer: "Nestle", hcpcsCode: "B4150", kcalPerMl: 1.2, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 300 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1200 }, { type: "carton", label: "1500 mL carton", mlPerUnit: 1500, kcalPerUnit: 1800 }] },
@@ -182,7 +182,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Nutren 1.5", manufacturer: "Nestle", hcpcsCode: "B4152", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 375 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1500 }] },
   { name: "Nutren 2.0", manufacturer: "Nestle", hcpcsCode: "B4152", kcalPerMl: 2.0, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 500 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 2000 }] },
   { name: "Boost Plus", manufacturer: "Nestle", hcpcsCode: "B4152", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 360 }] },
-  { name: "Boost VHC (Very High Calorie)", manufacturer: "Nestle", hcpcsCode: "B4152", kcalPerMl: 2.25, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 560 }] },
+  { name: "Boost VHC (Very High Calorie)", manufacturer: "Nestle", hcpcsCode: "B4152", kcalPerMl: 2.3, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 560 }] },
   { name: "Boost Max", manufacturer: "Nestle", hcpcsCode: "B4152", kcalPerMl: 1.86, kcalPerGram: null, packaging: [{ type: "bottle", label: "11 fl oz bottle", mlPerUnit: 325, kcalPerUnit: 480 }] },
   { name: "Isosource 1.5 Cal", manufacturer: "Nestle", hcpcsCode: "B4152", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 375 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1500 }, { type: "carton", label: "1500 mL carton", mlPerUnit: 1500, kcalPerUnit: 2250 }] },
   // Kate Farms
@@ -212,9 +212,9 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Vivonex Pediatric", manufacturer: "Nestle", hcpcsCode: "B4153", kcalPerMl: 0.8, kcalPerGram: null, packaging: [{ type: "packet", label: "1.7 oz packet (powder)", gramsPerUnit: 48 }] },
   // Kate Farms - Adult
   { name: "Kate Farms Peptide 1.0", manufacturer: "Kate Farms", hcpcsCode: "B4153", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "11 fl oz carton", mlPerUnit: 325, kcalPerUnit: 325 }] },
-  { name: "Kate Farms Peptide 1.5", manufacturer: "Kate Farms", hcpcsCode: "B4153", kcalPerMl: 1.54, kcalPerGram: null, packaging: [{ type: "carton", label: "11 fl oz carton", mlPerUnit: 325, kcalPerUnit: 500 }] },
+  { name: "Kate Farms Peptide 1.5", manufacturer: "Kate Farms", hcpcsCode: "B4153", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "carton", label: "11 fl oz carton", mlPerUnit: 325, kcalPerUnit: 500 }] },
   // Nutricia - Elemental formulas
-  { name: "Neocate Splash", manufacturer: "Nutricia", hcpcsCode: "B4153", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "8 fl oz carton", mlPerUnit: 237, kcalPerUnit: 237 }] },
+  { name: "Neocate Splash", manufacturer: "Nutricia", hcpcsCode: "B4153", kcalPerMl: 0.6763, kcalPerGram: null, packaging: [{ type: "carton", label: "8 fl oz carton", mlPerUnit: 237, kcalPerUnit: 237 }] },
   { name: "E028 Splash", manufacturer: "Nutricia", hcpcsCode: "B4153", kcalPerMl: 0.86, kcalPerGram: null, packaging: [{ type: "carton", label: "8.5 fl oz carton", mlPerUnit: 250, kcalPerUnit: 215 }] },
   // Mead Johnson
   { name: "Pregestimil", manufacturer: "Mead Johnson", hcpcsCode: "B4153", kcalPerMl: 0.6763, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "16 oz can (powder)", gramsPerUnit: 454 }] },
@@ -350,7 +350,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
 
   // ═════════════════════════════��════════════════════════════════════════════════
   // B4158: Pediatric, intact nutrients
-  // ══════════════════════════════════════════════════════════════����═══════════════
+  // ════════════════════════════════════════════════════════���═════����═══════════════
   // Abbott
   { name: "PediaSure 1.0 Cal", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "can", label: "8 fl oz can", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
   { name: "PediaSure with Fiber", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
@@ -458,7 +458,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Neocate Syneo Infant", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "14.1 oz can", gramsPerUnit: 400 }] },
   // Nutricia - PurAmino (Amino Acid)
   { name: "PurAmino", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "14.1 oz can", gramsPerUnit: 400 }] },
-  { name: "PurAmino Junior", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 1.01, kcalPerGram: null, packaging: [{ type: "carton", label: "8.45 fl oz carton", mlPerUnit: 250, kcalPerUnit: 252 }] },
+  { name: "PurAmino Junior", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: null, packaging: [{ type: "carton", label: "8.45 fl oz carton", mlPerUnit: 250, kcalPerUnit: 252 }] },
   // Mead Johnson - Nutramigen (Extensively Hydrolyzed)
   { name: "Nutramigen (Ready-to-Feed)", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: null, packaging: [{ type: "bottle", label: "2 fl oz bottle", mlPerUnit: 59 }, { type: "bottle", label: "6 fl oz bottle", mlPerUnit: 177 }, { type: "carton", label: "32 fl oz carton", mlPerUnit: 946 }] },
   { name: "Nutramigen (Powder)", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "12.6 oz can", gramsPerUnit: 357 }, { type: "can", label: "19.8 oz can", gramsPerUnit: 561 }] },
