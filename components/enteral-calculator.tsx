@@ -1259,6 +1259,8 @@ onValueChange={(val: VolumeUnit) => {
                   
                   const dailyMl = baseMl !== null ? (volumeTimePeriod === "month" ? baseMl / 30 : baseMl) : null
                   const dailyGrams = baseGrams !== null ? (volumeTimePeriod === "month" ? baseGrams / 30 : baseGrams) : null
+                  // Keep oz as primary unit when user inputs oz
+                  const dailyOz = volumeUnit === "oz" ? (volumeTimePeriod === "month" ? amount / 30 : amount) : (dailyMl !== null ? dailyMl / OZ_TO_ML : null)
                   
                   // Calculate estimated calories
                   // Use kcal/g ONLY when user is entering grams or powder packaging
@@ -1297,10 +1299,16 @@ onValueChange={(val: VolumeUnit) => {
                           = {fmt(dailyAmount)} {volumeUnit.startsWith("pkg-") ? unitLabel : volumeUnit} per day (avg)
                         </span>
                       )}
-                      {dailyMl !== null && volumeUnit !== "mL" && (
+                      {/* Show oz conversion only when user entered mL */}
+                      {volumeUnit === "mL" && dailyOz !== null && (
+                        <span>= {fmt(dailyOz)} oz per day</span>
+                      )}
+                      {/* Show mL conversion only when user entered oz */}
+                      {volumeUnit === "oz" && dailyMl !== null && (
                         <span>= {fmt(dailyMl)} mL per day</span>
                       )}
-                      {dailyGrams !== null && volumeUnit !== "g" && (
+                      {/* Show grams only for powder packaging inputs (not direct gram input, not liquid volume inputs) */}
+                      {dailyGrams !== null && volumeUnit.startsWith("pkg-") && selectedProduct?.packaging?.[parseInt(volumeUnit.replace("pkg-", ""))]?.gramsPerUnit && (
                         <span>= {fmt(dailyGrams)} g per day</span>
                       )}
                       {dailyKcal !== null && (
@@ -1430,6 +1438,41 @@ onValueChange={(val: VolumeUnit) => {
               {differenceInCalendarDays(endDate, startDate) + 1 !== 1 ? "s" : ""} (inclusive)
             </p>
           )}
+
+          {/* Date Range Breakdown */}
+          {startDate && endDate && endDate >= startDate && (() => {
+            const totalDays = differenceInCalendarDays(endDate, startDate) + 1
+            const weeks = Math.floor(totalDays / 7)
+            const remainingDays = totalDays % 7
+            const months = Math.floor(totalDays / 30)
+            const daysAfterMonths = totalDays % 30
+            
+            return (
+              <div className="rounded-lg border bg-muted/30 p-4 -mt-2">
+                <p className="text-sm font-medium mb-2">Date Range Breakdown</p>
+                <div className="grid grid-cols-1 gap-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Total Days:</span>
+                    <span>{totalDays} day{totalDays !== 1 ? "s" : ""}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">In Weeks:</span>
+                    <span>
+                      {weeks} week{weeks !== 1 ? "s" : ""}
+                      {remainingDays > 0 && `, ${remainingDays} day${remainingDays !== 1 ? "s" : ""}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">In Months:</span>
+                    <span>
+                      {months} month{months !== 1 ? "s" : ""}
+                      {daysAfterMonths > 0 && `, ${daysAfterMonths} day${daysAfterMonths !== 1 ? "s" : ""}`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
 
           {/* Errors */}
           {errors.length > 0 && (

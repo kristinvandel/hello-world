@@ -188,7 +188,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   // Kate Farms
   { name: "Kate Farms Standard 1.4", manufacturer: "Kate Farms", hcpcsCode: "B4152", kcalPerMl: 1.4, kcalPerGram: null, packaging: [{ type: "carton", label: "11 fl oz carton", mlPerUnit: 325, kcalPerUnit: 455 }] },
 
-  // ═══════════════════════════════════════════════════════�����══════════════════════
+  // ══════════════════════════════════════════════════════�������══════════════════════
   // B4153: Hydrolyzed proteins / Semi-elemental / Elemental
   // ══════════════════════════════════════════════════════════════════════════════
   // Abbott - Adult
@@ -461,13 +461,13 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "PurAmino Junior", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: null, packaging: [{ type: "carton", label: "8.45 fl oz carton", mlPerUnit: 250, kcalPerUnit: 168 }] },
   // Mead Johnson - Nutramigen (Extensively Hydrolyzed)
   { name: "Nutramigen (Ready-to-Feed)", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: null, packaging: [{ type: "bottle", label: "2 fl oz bottle", mlPerUnit: 59 }, { type: "bottle", label: "6 fl oz bottle", mlPerUnit: 177 }, { type: "carton", label: "32 fl oz carton", mlPerUnit: 946 }] },
-  { name: "Nutramigen (Powder)", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: null, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "12.6 oz can", gramsPerUnit: 357 }, { type: "can", label: "19.8 oz can", gramsPerUnit: 561 }] },
+  { name: "Nutramigen (Powder)", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "12.6 oz can", gramsPerUnit: 357 }, { type: "can", label: "19.8 oz can", gramsPerUnit: 561 }] },
   { name: "Nutramigen with Enflora LGG", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "12.6 oz can (powder)", gramsPerUnit: 357 }] },
   { name: "Nutramigen A+ with LGG", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "12.6 oz can (powder)", gramsPerUnit: 357 }] },
   { name: "Nutramigen Toddler", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: null, packaging: [{ type: "can", label: "12.6 oz can (powder)", gramsPerUnit: 357 }] },
   // Mead Johnson - Pregestimil
   { name: "Pregestimil", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "16 oz can", gramsPerUnit: 454 }] },
-  { name: "Pregestimil (Powder)", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: null, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "16 oz can", gramsPerUnit: 454 }] },
+  { name: "Pregestimil (Powder)", manufacturer: "Mead Johnson", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "16 oz can", gramsPerUnit: 454 }] },
   // Kate Farms Pediatric Peptide
   { name: "Kate Farms Pediatric Peptide 1.0", manufacturer: "Kate Farms", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "8.45 fl oz carton", mlPerUnit: 250, kcalPerUnit: 250 }] },
   { name: "Kate Farms Pediatric Peptide 1.5", manufacturer: "Kate Farms", hcpcsCode: "B4161", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "carton", label: "8.45 fl oz carton", mlPerUnit: 250, kcalPerUnit: 375 }] },

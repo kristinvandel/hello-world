@@ -10,21 +10,8 @@ export const metadata: Metadata = {
   title: 'Enteral Nutrition Unit Calculator | HCPCS Code Lookup',
   description: 'Calculate enteral nutrition billing units from HCPCS codes (B4149-B4162). Look up formulas from the PDAC product classification list, enter daily intake and date range, and get total units.',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/favicon.jpg',
+    apple: '/favicon.jpg',
   },
 }
 
