@@ -1314,6 +1314,40 @@ onValueChange={(val: VolumeUnit) => {
                       {dailyKcal !== null && (
                         <span className="text-primary font-medium">= {fmt(dailyKcal)} kcal per day</span>
                       )}
+                      
+                      {/* Weekly breakdown */}
+                      {(() => {
+                        const weeklyAmount = dailyAmount * 7
+                        const weeklyKcal = dailyKcal !== null ? dailyKcal * 7 : null
+                        const unitLabel = volumeUnit.startsWith("pkg-") 
+                          ? selectedProduct?.packaging?.[parseInt(volumeUnit.replace("pkg-", ""))]?.label || volumeUnit
+                          : volumeUnit
+                        return (
+                          <div className="mt-2 pt-2 border-t border-border/50">
+                            <span className="text-muted-foreground text-sm">
+                              {fmt(weeklyAmount)} {unitLabel} per week
+                              {weeklyKcal !== null && <span className="text-primary font-medium"> = {fmt(weeklyKcal)} kcal per week</span>}
+                            </span>
+                          </div>
+                        )
+                      })()}
+                      
+                      {/* Monthly breakdown */}
+                      {(() => {
+                        const monthlyAmount = dailyAmount * 30
+                        const monthlyKcal = dailyKcal !== null ? dailyKcal * 30 : null
+                        const unitLabel = volumeUnit.startsWith("pkg-") 
+                          ? selectedProduct?.packaging?.[parseInt(volumeUnit.replace("pkg-", ""))]?.label || volumeUnit
+                          : volumeUnit
+                        return (
+                          <div className="pt-1">
+                            <span className="text-muted-foreground text-sm">
+                              {fmt(monthlyAmount)} {unitLabel} per month
+                              {monthlyKcal !== null && <span className="text-primary font-medium"> = {fmt(monthlyKcal)} kcal per month</span>}
+                            </span>
+                          </div>
+                        )
+                      })()}
                     </div>
                   )
                 })()}
