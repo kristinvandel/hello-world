@@ -328,11 +328,11 @@ function DatePickerField({
 
   return (
     <div className="flex flex-col gap-2">
-      {label && <Label className="text-foreground font-semibold">{label}</Label>}
+      <Label className="text-foreground font-semibold">{label}</Label>
       <div className="flex gap-2">
   <Input
   type="text"
-  placeholder="MM/DD/YYYY"
+  placeholder="MMDDYY or MM/DD/YYYY"
   value={textValue}
   onChange={(e) => handleTextChange(e.target.value)}
   maxLength={10}
@@ -405,63 +405,81 @@ function fmt(n: number, digits = 2): string {
 
 function ResultsCard({ result }: { result: CalculationResult }) {
   return (
-    <Card className="border-2 border-primary/20 bg-primary/[0.02] h-fit">
-      <CardHeader className="pb-2 pt-4 px-4">
-        <CardTitle className="text-base text-primary">Results</CardTitle>
-        <CardDescription className="text-xs">
+    <Card className="border-2 border-primary/20 bg-primary/[0.02]">
+      <CardHeader>
+        <CardTitle className="text-lg text-primary">Calculation Results</CardTitle>
+        <CardDescription>
           {result.formulaName} ({result.hcpcsCode})
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3 px-4 pb-4">
-        {/* Compact stats grid */}
-        <div className="grid grid-cols-2 gap-2 text-sm">
+      <CardContent className="flex flex-col gap-4">
+        {/* Breakdown */}
+        <div className={`grid gap-3 text-sm ${result.densityValue !== null ? "grid-cols-2" : "grid-cols-3"}`}>
           {result.densityValue !== null && (
-            <div className="flex flex-col gap-0.5 rounded-md bg-muted/60 p-2">
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-                Volume/Day
+            <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                Daily Volume
               </span>
-              <span className="font-semibold text-foreground text-sm">
-                {fmt(result.dailyVolume)} {result.volumeUnitLabel}
+              <span className="font-semibold text-foreground">
+                {fmt(result.dailyVolume)} {result.volumeUnitLabel}/day
+              </span>
+              {result.feedingBreakdown && (
+                <span className="text-xs text-muted-foreground mt-0.5">
+                  ({fmt(result.feedingBreakdown.amountPerFeeding)} {result.feedingBreakdown.feedingUnitLabel} x {fmt(result.feedingBreakdown.timesPerDay)} feedings)
+                </span>
+              )}
+            </div>
+          )}
+          {result.densityValue !== null && result.densityType !== null && (
+            <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                Caloric Density
+              </span>
+              <span className="font-semibold text-foreground">
+                {fmt(result.densityValue)} {result.densityType}
               </span>
             </div>
           )}
-          <div className="flex flex-col gap-0.5 rounded-md bg-muted/60 p-2">
-            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-              kcal/Day
+          <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
+            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+              Calories/Day
             </span>
-            <span className="font-semibold text-foreground text-sm">
-              {fmt(result.caloriesPerDay)}
-            </span>
-          </div>
-          <div className="flex flex-col gap-0.5 rounded-md bg-muted/60 p-2">
-            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-              Days
-            </span>
-            <span className="font-semibold text-foreground text-sm">
-              {result.numDays}
+            <span className="font-semibold text-foreground">
+              {fmt(result.caloriesPerDay)} kcal
             </span>
           </div>
-          <div className="flex flex-col gap-0.5 rounded-md bg-muted/60 p-2">
-            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-              Total kcal
+          <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
+            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+              Number of Days
             </span>
-            <span className="font-semibold text-foreground text-sm">
-              {Number.isInteger(result.totalCalories) ? result.totalCalories.toLocaleString("en-US") : result.totalCalories.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+            <span className="font-semibold text-foreground">
+              {result.numDays} day{result.numDays !== 1 ? "s" : ""}
             </span>
           </div>
         </div>
 
-        {/* Final result - prominent */}
-        <div className="flex flex-col items-center gap-1 rounded-lg bg-primary p-4 text-primary-foreground">
-          <span className="text-[10px] font-medium uppercase tracking-widest opacity-80">
-            Total Units
+        <Separator />
+
+        <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
+          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+            Total Calories
           </span>
-          <span className="text-3xl font-bold tracking-tight">
+          <span className="font-semibold text-foreground">
+            {Number.isInteger(result.totalCalories) ? result.totalCalories.toLocaleString("en-US") : result.totalCalories.toLocaleString("en-US", { maximumFractionDigits: 2 })} kcal
+          </span>
+        </div>
+
+        {/* Final result */}
+        <div className="flex flex-col items-center gap-2 rounded-xl bg-primary p-6 text-primary-foreground">
+          <span className="text-xs font-medium uppercase tracking-widest opacity-80">
+            Total Units per Requested Date Span
+          </span>
+          <span className="text-4xl font-bold tracking-tight">
             {fmt(result.totalUnits)}
           </span>
-          <span className="text-xs opacity-80">
-            ({Number.isInteger(result.totalCalories) ? result.totalCalories.toLocaleString("en-US") : result.totalCalories.toLocaleString("en-US", { maximumFractionDigits: 0 })} kcal / 100)
-          </span>
+          <Badge variant="secondary" className="mt-1 text-xs">
+            {Number.isInteger(result.totalCalories) ? result.totalCalories.toLocaleString("en-US") : result.totalCalories.toLocaleString("en-US", { maximumFractionDigits: 2 })} kcal / 100
+          </Badge>
         </div>
       </CardContent>
     </Card>
@@ -578,35 +596,33 @@ function ResultsSummary({ result }: { result: CalculationResult }) {
   const combinedText = `${narrativeText}\n\n${mathText}`
 
   return (
-    <Card className="h-fit">
-      <CardHeader className="pb-2 pt-4 px-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Summary</CardTitle>
-          <CopyButton text={combinedText} label="Copy all" />
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2 px-4 pb-4">
+    <Card>
+      <CardContent className="flex flex-col gap-3 pt-5">
         <div className="flex items-start gap-2">
-          <p className="text-xs text-foreground leading-relaxed flex-1">
+          <p className="text-sm text-foreground leading-relaxed flex-1">
             {narrativeText}
           </p>
-          <CopyButton text={narrativeText} label="Copy" />
+          <CopyButton text={narrativeText} label="Copy narrative" />
         </div>
         <Separator />
         <div className="flex items-start gap-2">
-          <div className="flex flex-col gap-1 text-[11px] text-muted-foreground font-mono flex-1">
+          <div className="flex flex-col gap-1.5 text-xs text-muted-foreground font-mono flex-1">
             {result.feedingBreakdown && feedingUnitLabelForMath && (
               <p>{`${fmt(result.feedingBreakdown.amountPerFeeding)} ${feedingUnitLabelForMath} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day = ${fmt(userInputVolume)} ${unitLabelForMath}/day`}</p>
             )}
             {isDirectCalorieInput ? (
-              <p>{`${fmt(caloriesForPeriod)} cal${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} cal/day` : ""}`}</p>
+              <p>{`${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
             ) : (
-              <p>{`${fmt(userInputVolume)} ${unitLabelForMath} x ${fmt(kcalPerUserUnit!)} kcal = ${fmt(caloriesForPeriod)} cal${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} cal/day` : ""}`}</p>
+              <p>{`${fmt(userInputVolume)} ${unitLabelForMath} x ${fmt(kcalPerUserUnit!)} kcal/${unitLabelForMath} = ${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`}</p>
             )}
-            <p>{`${fmt(result.caloriesPerDay)} cal/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} cal`}</p>
-            <p>{`${fmt(result.totalCalories)} cal / 100 = ${fmt(result.totalUnits)} units`}</p>
+            <p>{`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`}</p>
+            <p>{`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`}</p>
           </div>
-          <CopyButton text={mathText} label="Copy" />
+          <CopyButton text={mathText} label="Copy math" />
+        </div>
+        <Separator />
+        <div className="flex justify-end">
+          <CopyButton text={combinedText} label="Copy all" />
         </div>
       </CardContent>
     </Card>
@@ -1024,48 +1040,41 @@ export function EnteralCalculator() {
   }, [startDate, endDate])
 
   return (
-    <div className={cn("flex flex-col gap-4 w-full max-w-4xl mx-auto", result && "calculated")}>
-      {/* Compact Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Calculator className="size-5 text-primary" />
-          <h1 className="text-lg font-semibold text-primary">Enteral Nutrition Calculator</h1>
-        </div>
-        <Button onClick={handleReset} variant="ghost" size="sm" className="h-8 text-muted-foreground hover:text-foreground">
-          <RotateCcw className="mr-1.5 size-3.5" />
-          Reset
-        </Button>
-      </div>
+    <div className={cn("flex flex-col gap-6 w-full max-w-xl mx-auto", result && "calculated")}>
+      {/* Main Form Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-1.5">
+              <CardTitle className="flex items-center gap-2 text-xl text-primary">
+                <Calculator className="size-5" />
+                Enteral Nutrition Unit Calculator
+              </CardTitle>
+              <CardDescription>
+                Search by HCPCS code or formula name to calculate billing units.
+              </CardDescription>
+            </div>
+            <Button onClick={handleReset} variant="ghost" size="sm" className="shrink-0 text-muted-foreground hover:text-foreground">
+              <RotateCcw className="mr-1.5 size-3.5" />
+              Reset Form
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6">
+          {/* Step 1: HCPCS Code Selection */}
+          <HcpcsCodeSelector
+            value={hcpcsCode}
+            onChange={handleHcpcsChange}
+          />
 
-      {/* Two-column layout for inputs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Left Column: Product Selection */}
-        <Card className="h-fit">
-          <CardHeader className="pb-3 pt-4 px-4">
-            <CardTitle className="text-sm font-medium">Product Selection</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4 px-4 pb-4">
-            {/* HCPCS Code Selection */}
-            <HcpcsCodeSelector
-              value={hcpcsCode}
-              onChange={handleHcpcsChange}
-            />
+          {/* Step 2: Formula Selection */}
+          <FormulaSelector
+            hcpcsCode={hcpcsCode}
+            value={formulaName}
+            onSelect={handleFormulaSelect}
+          />
 
-            {/* Formula Selection */}
-            <FormulaSelector
-              hcpcsCode={hcpcsCode}
-              value={formulaName}
-              onSelect={handleFormulaSelect}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Right Column: Volume & Dates */}
-        <Card className="h-fit">
-          <CardHeader className="pb-3 pt-4 px-4">
-            <CardTitle className="text-sm font-medium">Volume & Date Range</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4 px-4 pb-4">
+          <Separator />
 
           {/* Step 4: Volume Input */}
           <div className="flex flex-col gap-3">
@@ -1405,60 +1414,94 @@ onValueChange={(val: VolumeUnit) => {
             )}
           </div>
 
-          {/* Date Range - Compact */}
-          <div className="flex flex-col gap-2">
-            <Label className="text-foreground font-semibold">Date Range</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <DatePickerField
-                label=""
-                value={startDate}
-                onChange={(date) => {
-                  setStartDate(date)
-                  setResult(null)
-                }}
-              />
-              <DatePickerField
-                label=""
-                value={endDate}
-                onChange={(date) => {
-                  setEndDate(date)
-                  setResult(null)
-                }}
-                minDate={startDate}
-              />
-            </div>
-            {startDate && endDate && endDate >= startDate && (
-              <p className="text-xs text-muted-foreground">
-                {differenceInCalendarDays(endDate, startDate) + 1} day{differenceInCalendarDays(endDate, startDate) + 1 !== 1 ? "s" : ""} (inclusive)
-              </p>
-            )}
+          {/* Step 5: Date Range */}
+          <div className="grid grid-cols-2 gap-4">
+            <DatePickerField
+              label="Start Date"
+              value={startDate}
+              onChange={(date) => {
+                setStartDate(date)
+                setResult(null)
+              }}
+            />
+            <DatePickerField
+              label="End Date"
+              value={endDate}
+              onChange={(date) => {
+                setEndDate(date)
+                setResult(null)
+              }}
+              minDate={startDate}
+            />
           </div>
-          </CardContent>
-        </Card>
-      </div>
+          {startDate && endDate && endDate >= startDate && (
+            <p className="text-xs text-muted-foreground -mt-4">
+              {differenceInCalendarDays(endDate, startDate) + 1} day
+              {differenceInCalendarDays(endDate, startDate) + 1 !== 1 ? "s" : ""} (inclusive)
+            </p>
+          )}
 
-      {/* Errors */}
-      {errors.length > 0 && (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive flex flex-col gap-1">
-          {errors.map((error, i) => (
-            <p key={i}>{error}</p>
-          ))}
-        </div>
-      )}
+          {/* Date Range Breakdown */}
+          {startDate && endDate && endDate >= startDate && (() => {
+            const totalDays = differenceInCalendarDays(endDate, startDate) + 1
+            const weeks = Math.floor(totalDays / 7)
+            const remainingDays = totalDays % 7
+            const months = Math.floor(totalDays / 30)
+            const daysAfterMonths = totalDays % 30
+            
+            return (
+              <div className="rounded-lg border bg-muted/30 p-4 -mt-2">
+                <p className="text-sm font-medium mb-2">Date Range Breakdown</p>
+                <div className="grid grid-cols-1 gap-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Total Days:</span>
+                    <span>{totalDays} day{totalDays !== 1 ? "s" : ""}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">In Weeks:</span>
+                    <span>
+                      {weeks} week{weeks !== 1 ? "s" : ""}
+                      {remainingDays > 0 && `, ${remainingDays} day${remainingDays !== 1 ? "s" : ""}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">In Months:</span>
+                    <span>
+                      {months} month{months !== 1 ? "s" : ""}
+                      {daysAfterMonths > 0 && `, ${daysAfterMonths} day${daysAfterMonths !== 1 ? "s" : ""}`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
 
-      {/* Calculate Button - Full Width */}
-      <Button onClick={handleCalculate} className="w-full" size="lg">
-        <Calculator className="mr-2 size-4" />
-        Calculate Units
-      </Button>
+          {/* Errors */}
+          {errors.length > 0 && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive flex flex-col gap-1">
+              {errors.map((error, i) => (
+                <p key={i}>{error}</p>
+              ))}
+            </div>
+          )}
 
-      {/* Results - Side by Side on Desktop */}
-      {result && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ResultsCard result={result} />
-          <ResultsSummary result={result} />
-        </div>
-      )}
+          {/* Actions */}
+          <div className="flex gap-3">
+            <Button onClick={handleCalculate} className="flex-1" size="lg">
+              <Calculator className="mr-2 size-4" />
+              Calculate Units
+            </Button>
+            <Button onClick={handleReset} variant="outline" size="lg">
+              <RotateCcw className="mr-2 size-4" />
+              Clear All
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Results */}
+      {result && <ResultsCard result={result} />}
+      {result && <ResultsSummary result={result} />}
     </div>
   )
 }
