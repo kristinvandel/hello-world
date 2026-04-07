@@ -705,7 +705,10 @@ function VolumeCalculator({
                 />
                 <Select
                   value={feedingUnit}
-                  onValueChange={(val: VolumeUnit) => setFeedingUnit(val)}
+                  onValueChange={(val: VolumeUnit) => {
+                    console.log("[v0] feedingUnit changed to:", val)
+                    setFeedingUnit(val)
+                  }}
                 >
                   <SelectTrigger className="w-24 h-8 text-xs shrink-0">
                     <SelectValue placeholder="Unit" />
