@@ -29,8 +29,6 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectLabel,
-  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -670,16 +668,11 @@ function VolumeCalculator({
     return feedingUnit
   }, [feedingUnit, packaging])
 
-  console.log("[v0] VolumeCalculator render - open:", open, "feedingUnit:", feedingUnit, "packaging:", packaging)
-
   return (
     <div className="flex flex-col gap-2">
       <button
         type="button"
-        onClick={() => {
-          console.log("[v0] Calculate daily volume clicked, toggling open from", open, "to", !open)
-          setOpen(!open)
-        }}
+        onClick={() => setOpen(!open)}
         className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline cursor-pointer w-fit"
       >
         <ChevronRight
@@ -705,29 +698,20 @@ function VolumeCalculator({
                 />
                 <Select
                   value={feedingUnit}
-                  onValueChange={(val: VolumeUnit) => {
-                    console.log("[v0] feedingUnit changed to:", val)
-                    setFeedingUnit(val)
-                  }}
+                  onValueChange={(val: VolumeUnit) => setFeedingUnit(val)}
                 >
                   <SelectTrigger className="w-24 h-8 text-xs shrink-0">
                     <SelectValue placeholder="Unit" />
                   </SelectTrigger>
-                  <SelectContent position="popper" sideOffset={4}>
+                  <SelectContent>
                     <SelectItem value="oz">oz</SelectItem>
                     <SelectItem value="mL">mL</SelectItem>
                     <SelectItem value="g">g</SelectItem>
-                    {packaging && packaging.length > 0 && (
-                      <>
-                        <SelectSeparator />
-                        <SelectLabel>Packaging</SelectLabel>
-                        {packaging.map((pkg, idx) => (
-                          <SelectItem key={`pkg-${idx}`} value={`pkg-${idx}`}>
-                            {pkg.label}
-                          </SelectItem>
-                        ))}
-                      </>
-                    )}
+                    {packaging && packaging.length > 0 && packaging.map((pkg, idx) => (
+                      <SelectItem key={`pkg-${idx}`} value={`pkg-${idx}`}>
+                        {pkg.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
