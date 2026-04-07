@@ -670,11 +670,16 @@ function VolumeCalculator({
     return feedingUnit
   }, [feedingUnit, packaging])
 
+  console.log("[v0] VolumeCalculator render - open:", open, "feedingUnit:", feedingUnit, "packaging:", packaging)
+
   return (
     <div className="flex flex-col gap-2">
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          console.log("[v0] Calculate daily volume clicked, toggling open from", open, "to", !open)
+          setOpen(!open)
+        }}
         className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline cursor-pointer w-fit"
       >
         <ChevronRight
