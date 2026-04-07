@@ -29,6 +29,8 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -700,18 +702,17 @@ function VolumeCalculator({
                   value={feedingUnit}
                   onValueChange={(val: VolumeUnit) => setFeedingUnit(val)}
                 >
-                  <SelectTrigger className="w-20 h-8 text-xs">
-                    <SelectValue />
+                  <SelectTrigger className="w-24 h-8 text-xs shrink-0">
+                    <SelectValue placeholder="Unit" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" sideOffset={4}>
                     <SelectItem value="oz">oz</SelectItem>
                     <SelectItem value="mL">mL</SelectItem>
                     <SelectItem value="g">g</SelectItem>
                     {packaging && packaging.length > 0 && (
                       <>
-                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">
-                          Packaging
-                        </div>
+                        <SelectSeparator />
+                        <SelectLabel>Packaging</SelectLabel>
                         {packaging.map((pkg, idx) => (
                           <SelectItem key={`pkg-${idx}`} value={`pkg-${idx}`}>
                             {pkg.label}
