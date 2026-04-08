@@ -122,7 +122,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Liquid Hope", manufacturer: "Functional Formularies", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "pouch", label: "12 fl oz pouch", mlPerUnit: 355, kcalPerUnit: 355 }] },
   { name: "Liquid Hope Peptide", manufacturer: "Functional Formularies", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "pouch", label: "12 fl oz pouch", mlPerUnit: 355, kcalPerUnit: 355 }] },
   { name: "Nourish", manufacturer: "Functional Formularies", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "pouch", label: "12 fl oz pouch", mlPerUnit: 355, kcalPerUnit: 355 }] },
-  { name: "Nourish Peptide", manufacturer: "Functional Formularies", hcpcsCode: "B4161", kcalPerMl: 1.46, kcalPerGram: null, packaging: [{ type: "pouch", label: "12 fl oz pouch", mlPerUnit: 355, kcalPerUnit: 518 }] },
+  { name: "Nourish Peptide", manufacturer: "Functional Formularies", hcpcsCode: "B4161", kcalPerMl: 1.46, kcalPerGram: null, packaging: [{ type: "pouch", label: "12 fl oz pouch", mlPerUnit: 355, kcalPerUnit: 520 }] },
   { name: "Nourish Pediatric", manufacturer: "Functional Formularies", hcpcsCode: "B4149", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "pouch", label: "12 fl oz pouch", mlPerUnit: 355, kcalPerUnit: 355 }] },
   { name: "Real Food Blends (Salmon/Oats/Squash)", manufacturer: "Real Food Blends", hcpcsCode: "B4149", kcalPerMl: 0.7, kcalPerGram: null, packaging: [{ type: "pouch", label: "9.4 fl oz pouch", mlPerUnit: 278, kcalPerUnit: 195 }] },
   { name: "Real Food Blends (Beef/Potatoes/Spinach)", manufacturer: "Real Food Blends", hcpcsCode: "B4149", kcalPerMl: 0.7, kcalPerGram: null, packaging: [{ type: "pouch", label: "9.4 fl oz pouch", mlPerUnit: 278, kcalPerUnit: 195 }] },
@@ -309,7 +309,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "ProSource Gelatein 20", manufacturer: "Medtrition", hcpcsCode: "B4155", kcalPerMl: 0.88, kcalPerGram: null, packaging: [{ type: "bottle", label: "4 fl oz bottle", mlPerUnit: 118, kcalPerUnit: 104 }] },
   { name: "ProSource TF", manufacturer: "Medtrition", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 3.5, isPowder: true, packaging: [{ type: "packet", label: "11g packet", gramsPerUnit: 11, kcalPerUnit: 39 }] },
 
-  // ══════════════════════════════════════════════════════════════════════════════
+  // ═══��══════════════════════════════════════════════════════════════════════════
   // B4157: Inherited disease of metabolism (Adult)
   // ══════════════════════════════════════════════════════════════════════════════
   // Abbott "-2" powders: All 410 kcal per 100g = 4.1 kcal/g
