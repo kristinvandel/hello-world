@@ -645,12 +645,10 @@ function VolumeCalculator({
   const [feedingUnit, setFeedingUnit] = useState<VolumeUnit>(densityType === "kcal/g" ? "g" : "mL")
   const [timesPerDay, setTimesPerDay] = useState("")
 
-  // Sync feedingUnit when densityType changes (only reset to base units, not packaging)
+  // Sync feedingUnit when densityType changes (only reset to default unit when density type changes)
   useEffect(() => {
-    if (!feedingUnit.startsWith("pkg-")) {
-      setFeedingUnit(densityType === "kcal/g" ? "g" : "mL")
-    }
-  }, [densityType, feedingUnit])
+    setFeedingUnit(densityType === "kcal/g" ? "g" : "mL")
+  }, [densityType])
 
   const calculatedTotal = useMemo(() => {
     const amt = parseFloat(amountPerFeeding)
@@ -700,10 +698,10 @@ function VolumeCalculator({
                   value={feedingUnit}
                   onValueChange={(val: VolumeUnit) => setFeedingUnit(val)}
                 >
-                  <SelectTrigger className="w-20 h-8 text-xs">
+                  <SelectTrigger className="w-20 h-8 text-xs relative z-10">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" side="bottom" align="start" sideOffset={4} className="z-[100]">
                     <SelectItem value="oz">oz</SelectItem>
                     <SelectItem value="mL">mL</SelectItem>
                     <SelectItem value="g">g</SelectItem>
