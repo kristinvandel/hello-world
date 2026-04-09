@@ -309,7 +309,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "ProSource Gelatein 20", manufacturer: "Medtrition", hcpcsCode: "B4155", kcalPerMl: 0.88, kcalPerGram: null, packaging: [{ type: "bottle", label: "4 fl oz bottle", mlPerUnit: 118, kcalPerUnit: 104 }] },
   { name: "ProSource TF", manufacturer: "Medtrition", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 3.5, isPowder: true, packaging: [{ type: "packet", label: "11g packet", gramsPerUnit: 11, kcalPerUnit: 39 }] },
 
-  // ═══���══════════════════════════════════════════════════════════════════════════
+  // ═══����══════════════════════════════════════════════════════════════════════════
   // B4157: Inherited disease of metabolism (Adult)
   // ══════════════════════════════════════════════════════════════════════════════
   // Abbott "-2" powders: All 410 kcal per 100g = 4.1 kcal/g
@@ -457,7 +457,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Neocate Junior (Tropical)", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "can", label: "14.1 oz can (powder)", gramsPerUnit: 400 }] },
   { name: "Neocate Junior with Prebiotics", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "can", label: "14.1 oz can (powder)", gramsPerUnit: 400 }] },
 { name: "Neocate Syneo Infant", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "14.1 oz can", gramsPerUnit: 400 }] },
-  { name: "Pepticate", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "14.1 oz can", gramsPerUnit: 400 }] },
+  { name: "Pepticate", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: 4.67, isPowder: true, packaging: [{ type: "can", label: "13.2 oz can", gramsPerUnit: 375 }] },
 
   { name: "PurAmino", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "14.1 oz can", gramsPerUnit: 400 }] },
   { name: "PurAmino Junior", manufacturer: "Nutricia", hcpcsCode: "B4161", kcalPerMl: 0.6763, kcalPerGram: null, packaging: [{ type: "carton", label: "8.45 fl oz carton", mlPerUnit: 250, kcalPerUnit: 168 }] },
