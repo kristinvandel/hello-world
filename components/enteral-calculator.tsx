@@ -292,53 +292,74 @@ function DatePickerField({
     if (value) setTextValue(format(value, "MM/dd/yyyy"))
   }, [value])
 
-  const handleTextChange = (raw: string) => {
-    // Allow only digits and slashes while typing
-    const cleaned = raw.replace(/[^\d/]/g, "")
-    setTextValue(cleaned)
-    
-    // Parse various date formats
+  // Helper to convert 2-digit year to 4-digit year
+  // Assumes years 00-99 map to 2000-2099 (current century)
+  const expandYear = (yy: string): string => {
+    return `20${yy.padStart(2, "0")}`
+  }
+
+  const parseDate = (cleaned: string): Date | null => {
     const digitsOnly = cleaned.replace(/\//g, "")
-    let parsed: Date | null = null
     
-    // Helper to convert 2-digit year to 4-digit year
-    // Assumes years 00-99 map to 2000-2099 (current century)
-    const expandYear = (yy: string): string => {
-      const year = parseInt(yy, 10)
-      return `20${yy.padStart(2, "0")}`
-    }
-    
-    // Try MM/DD/YYYY format (with slashes, 10 chars)
+    // Try MM/DD/YYYY format (with slashes, 10 chars) - full 4-digit year
     if (cleaned.length === 10 && cleaned.includes("/")) {
-      parsed = parse(cleaned, "MM/dd/yyyy", new Date())
+      return parse(cleaned, "MM/dd/yyyy", new Date())
     }
-    // Try MMDDYYYY format (8 digits, no slashes)
-    else if (digitsOnly.length === 8 && !cleaned.includes("/")) {
-      parsed = parse(digitsOnly, "MMddyyyy", new Date())
+    // Try MMDDYYYY format (8 digits, no slashes) - full 4-digit year
+    if (digitsOnly.length === 8 && !cleaned.includes("/")) {
+      return parse(digitsOnly, "MMddyyyy", new Date())
     }
-    // Try MM/DD/YY format (with slashes, 8 chars)
-    else if (cleaned.length === 8 && cleaned.includes("/")) {
+    // Try MM/DD/YY format (with slashes, 8 chars) - 2-digit year
+    if (cleaned.length === 8 && cleaned.includes("/")) {
       const parts = cleaned.split("/")
       if (parts.length === 3 && parts[2].length === 2) {
         const fullYear = expandYear(parts[2])
         const fullDate = `${parts[0]}/${parts[1]}/${fullYear}`
-        parsed = parse(fullDate, "MM/dd/yyyy", new Date())
+        return parse(fullDate, "MM/dd/yyyy", new Date())
       }
     }
-    // Try MMDDYY format (6 digits, no slashes)
-    else if (digitsOnly.length === 6 && !cleaned.includes("/")) {
+    // Try MMDDYY format (6 digits, no slashes) - 2-digit year
+    if (digitsOnly.length === 6 && !cleaned.includes("/")) {
       const mm = digitsOnly.slice(0, 2)
       const dd = digitsOnly.slice(2, 4)
       const yy = digitsOnly.slice(4, 6)
       const fullYear = expandYear(yy)
       const fullDate = `${mm}${dd}${fullYear}`
-      parsed = parse(fullDate, "MMddyyyy", new Date())
+      return parse(fullDate, "MMddyyyy", new Date())
     }
+    return null
+  }
+
+  const handleTextChange = (raw: string) => {
+    // Allow only digits and slashes while typing
+    const cleaned = raw.replace(/[^\d/]/g, "")
+    setTextValue(cleaned)
+    
+    // Only auto-parse for full 4-digit year formats while typing
+    // This prevents "04/03/20" from being interpreted as 2020 before user types "26"
+    const digitsOnly = cleaned.replace(/\//g, "")
+    const hasFourDigitYear = 
+      (cleaned.length === 10 && cleaned.includes("/")) || // MM/DD/YYYY
+      (digitsOnly.length === 8 && !cleaned.includes("/"))  // MMDDYYYY
+    
+    if (hasFourDigitYear) {
+      const parsed = parseDate(cleaned)
+      if (parsed && isValid(parsed)) {
+        if (minDate && parsed < minDate) return
+        onChange(parsed)
+        setTextValue(format(parsed, "MM/dd/yyyy"))
+      }
+    }
+  }
+
+  const handleBlur = () => {
+    // Parse 2-digit year formats only on blur (when user is done typing)
+    const cleaned = textValue.replace(/[^\d/]/g, "")
+    const parsed = parseDate(cleaned)
     
     if (parsed && isValid(parsed)) {
       if (minDate && parsed < minDate) return
       onChange(parsed)
-      // Update display to standard format
       setTextValue(format(parsed, "MM/dd/yyyy"))
     }
   }
@@ -352,9 +373,10 @@ function DatePickerField({
   placeholder="MMDDYY or MM/DD/YYYY"
   value={textValue}
   onChange={(e) => handleTextChange(e.target.value)}
+  onBlur={handleBlur}
   maxLength={10}
   className="flex-1 h-10"
-  />
+/>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
