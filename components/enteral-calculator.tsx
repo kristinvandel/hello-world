@@ -293,37 +293,54 @@ function DatePickerField({
   }, [value])
 
   const handleTextChange = (raw: string) => {
-  // Allow only digits and slashes while typing
-  const cleaned = raw.replace(/[^\d/]/g, "")
-  setTextValue(cleaned)
-  
-  // Parse various date formats
-  const digitsOnly = cleaned.replace(/\//g, "")
-  let parsed: Date | null = null
-  
-  // Try MM/DD/YYYY format (with slashes, 10 chars)
-  if (cleaned.length === 10 && cleaned.includes("/")) {
-    parsed = parse(cleaned, "MM/dd/yyyy", new Date())
-  }
-  // Try MMDDYYYY format (8 digits, no slashes)
-  else if (digitsOnly.length === 8 && !cleaned.includes("/")) {
-    parsed = parse(digitsOnly, "MMddyyyy", new Date())
-  }
-  // Try MM/DD/YY format (with slashes, 8 chars)
-  else if (cleaned.length === 8 && cleaned.includes("/")) {
-    parsed = parse(cleaned, "MM/dd/yy", new Date())
-  }
-  // Try MMDDYY format (6 digits, no slashes)
-  else if (digitsOnly.length === 6 && !cleaned.includes("/")) {
-    parsed = parse(digitsOnly, "MMddyy", new Date())
-  }
-  
-  if (parsed && isValid(parsed)) {
-    if (minDate && parsed < minDate) return
-    onChange(parsed)
-    // Update display to standard format
-    setTextValue(format(parsed, "MM/dd/yyyy"))
-  }
+    // Allow only digits and slashes while typing
+    const cleaned = raw.replace(/[^\d/]/g, "")
+    setTextValue(cleaned)
+    
+    // Parse various date formats
+    const digitsOnly = cleaned.replace(/\//g, "")
+    let parsed: Date | null = null
+    
+    // Helper to convert 2-digit year to 4-digit year
+    // Assumes years 00-99 map to 2000-2099 (current century)
+    const expandYear = (yy: string): string => {
+      const year = parseInt(yy, 10)
+      return `20${yy.padStart(2, "0")}`
+    }
+    
+    // Try MM/DD/YYYY format (with slashes, 10 chars)
+    if (cleaned.length === 10 && cleaned.includes("/")) {
+      parsed = parse(cleaned, "MM/dd/yyyy", new Date())
+    }
+    // Try MMDDYYYY format (8 digits, no slashes)
+    else if (digitsOnly.length === 8 && !cleaned.includes("/")) {
+      parsed = parse(digitsOnly, "MMddyyyy", new Date())
+    }
+    // Try MM/DD/YY format (with slashes, 8 chars)
+    else if (cleaned.length === 8 && cleaned.includes("/")) {
+      const parts = cleaned.split("/")
+      if (parts.length === 3 && parts[2].length === 2) {
+        const fullYear = expandYear(parts[2])
+        const fullDate = `${parts[0]}/${parts[1]}/${fullYear}`
+        parsed = parse(fullDate, "MM/dd/yyyy", new Date())
+      }
+    }
+    // Try MMDDYY format (6 digits, no slashes)
+    else if (digitsOnly.length === 6 && !cleaned.includes("/")) {
+      const mm = digitsOnly.slice(0, 2)
+      const dd = digitsOnly.slice(2, 4)
+      const yy = digitsOnly.slice(4, 6)
+      const fullYear = expandYear(yy)
+      const fullDate = `${mm}${dd}${fullYear}`
+      parsed = parse(fullDate, "MMddyyyy", new Date())
+    }
+    
+    if (parsed && isValid(parsed)) {
+      if (minDate && parsed < minDate) return
+      onChange(parsed)
+      // Update display to standard format
+      setTextValue(format(parsed, "MM/dd/yyyy"))
+    }
   }
 
   return (
