@@ -213,7 +213,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Vivonex Pediatric", manufacturer: "Nestle", hcpcsCode: "B4153", kcalPerMl: 0.8, kcalPerGram: null, packaging: [{ type: "packet", label: "1.7 oz packet (powder)", gramsPerUnit: 48 }] },
   // Kate Farms - Adult
   { name: "Kate Farms Peptide 1.0", manufacturer: "Kate Farms", hcpcsCode: "B4153", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "11 fl oz carton", mlPerUnit: 325, kcalPerUnit: 325 }] },
-  { name: "Kate Farms Peptide 1.5", manufacturer: "Kate Farms", hcpcsCode: "B4153", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "carton", label: "11 fl oz carton", mlPerUnit: 325, kcalPerUnit: 490 }] },
+  { name: "Kate Farms Peptide 1.5", manufacturer: "Kate Farms", hcpcsCode: "B4153", kcalPerMl: 1.54, kcalPerGram: null, packaging: [{ type: "bottle", label: "11 fl oz bottle", mlPerUnit: 325, kcalPerUnit: 500 }] },
   // Nutricia - Elemental formulas
   { name: "Neocate Splash", manufacturer: "Nutricia", hcpcsCode: "B4153", kcalPerMl: 0.6763, kcalPerGram: null, packaging: [{ type: "carton", label: "8 fl oz carton", mlPerUnit: 237, kcalPerUnit: 159 }] },
   { name: "E028 Splash", manufacturer: "Nutricia", hcpcsCode: "B4153", kcalPerMl: 0.86, kcalPerGram: null, packaging: [{ type: "carton", label: "8.5 fl oz carton", mlPerUnit: 250, kcalPerUnit: 215 }] },
@@ -309,7 +309,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "ProSource Gelatein 20", manufacturer: "Medtrition", hcpcsCode: "B4155", kcalPerMl: 0.88, kcalPerGram: null, packaging: [{ type: "bottle", label: "4 fl oz bottle", mlPerUnit: 118, kcalPerUnit: 104 }] },
   { name: "ProSource TF", manufacturer: "Medtrition", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 3.5, isPowder: true, packaging: [{ type: "packet", label: "11g packet", gramsPerUnit: 11, kcalPerUnit: 39 }] },
 
-  // ═══����══════════════════════════════════════════════════════════════════════════
+  // ═══�����══════════════════════════════════════════════════════════════════════════
   // B4157: Inherited disease of metabolism (Adult)
   // ══════════════════════════════════════════════════════════════════════════════
   // Abbott "-2" powders: All 410 kcal per 100g = 4.1 kcal/g
