@@ -309,7 +309,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "ProSource Gelatein 20", manufacturer: "Medtrition", hcpcsCode: "B4155", kcalPerMl: 0.88, kcalPerGram: null, packaging: [{ type: "bottle", label: "4 fl oz bottle", mlPerUnit: 118, kcalPerUnit: 104 }] },
   { name: "ProSource TF", manufacturer: "Medtrition", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 3.5, isPowder: true, packaging: [{ type: "packet", label: "11g packet", gramsPerUnit: 11, kcalPerUnit: 39 }] },
 
-  // ═══�����══════════════════════════════════════════════════════════════════════════
+  // ═══�������══════════════════════════════════════════════════════════════════════════
   // B4157: Inherited disease of metabolism (Adult)
   // ══════════════════════════════════════════════════════════════════════════════
   // Abbott "-2" powders: All 410 kcal per 100g = 4.1 kcal/g
@@ -353,7 +353,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   // B4158: Pediatric, intact nutrients
   // ══════════════════════════════════════════════════════════════����═══════════════
   // Abbott
-  { name: "PediaSure 1.0 Cal", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "can", label: "8 fl oz can", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
+  { name: "PediaSure 1.0 Cal", manufacturer: "Abbott", hcpcsCode: "B4160", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "can", label: "8 fl oz can", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
   { name: "PediaSure with Fiber", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
   { name: "PediaSure Enteral", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }, { type: "bottle", label: "237 mL bottle", mlPerUnit: 237, kcalPerUnit: 237 }] },
   { name: "Similac Advance", manufacturer: "Abbott", hcpcsCode: "B4158", kcalPerMl: 0.6763, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "12.4 oz can (powder)", gramsPerUnit: 352 }, { type: "bottle", label: "2 fl oz RTF bottle", mlPerUnit: 59 }, { type: "carton", label: "32 fl oz RTF carton", mlPerUnit: 946 }] },
