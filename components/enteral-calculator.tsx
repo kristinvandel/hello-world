@@ -162,7 +162,7 @@ function FormulaSelector({
   // Filter products based on HCPCS code and search query
   const filteredProducts = useMemo(() => {
     let products = hcpcsCode 
-      ? ENTERAL_PRODUCTS.filter(p => p.hcpcsCode === hcpcsCode)
+      ? ENTERAL_PRODUCTS.filter(p => p.hcpcsCode === hcpcsCode || p.altHcpcsCode === hcpcsCode)
       : [...ENTERAL_PRODUCTS]
     
     // Apply search filter
@@ -187,7 +187,7 @@ function FormulaSelector({
   // Count for the HCPCS filter (before search)
   const totalForCode = useMemo(() => {
     return hcpcsCode 
-      ? ENTERAL_PRODUCTS.filter(p => p.hcpcsCode === hcpcsCode).length
+      ? ENTERAL_PRODUCTS.filter(p => p.hcpcsCode === hcpcsCode || p.altHcpcsCode === hcpcsCode).length
       : ENTERAL_PRODUCTS.length
   }, [hcpcsCode])
 
