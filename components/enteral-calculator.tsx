@@ -162,7 +162,7 @@ function FormulaSelector({
   // Filter products based on HCPCS code and search query
   const filteredProducts = useMemo(() => {
     let products = hcpcsCode 
-      ? ENTERAL_PRODUCTS.filter(p => p.hcpcsCode === hcpcsCode)
+      ? ENTERAL_PRODUCTS.filter(p => p.hcpcsCode === hcpcsCode || p.altHcpcsCode === hcpcsCode)
       : [...ENTERAL_PRODUCTS]
     
     // Apply search filter
@@ -187,7 +187,7 @@ function FormulaSelector({
   // Count for the HCPCS filter (before search)
   const totalForCode = useMemo(() => {
     return hcpcsCode 
-      ? ENTERAL_PRODUCTS.filter(p => p.hcpcsCode === hcpcsCode).length
+      ? ENTERAL_PRODUCTS.filter(p => p.hcpcsCode === hcpcsCode || p.altHcpcsCode === hcpcsCode).length
       : ENTERAL_PRODUCTS.length
   }, [hcpcsCode])
 
@@ -239,7 +239,12 @@ function FormulaSelector({
                       key={`${product.hcpcsCode}-${product.name}`}
                       value={product.name}
                       onSelect={() => {
-                        onSelect(product.hcpcsCode, product.name)
+                        // If user filtered by a valid HCPCS code for this product, keep that code
+                        // Otherwise use the product's primary code
+                        const codeToUse = (hcpcsCode && (product.hcpcsCode === hcpcsCode || product.altHcpcsCode === hcpcsCode))
+                          ? hcpcsCode
+                          : product.hcpcsCode
+                        onSelect(codeToUse, product.name)
                         setOpen(false)
                         setSearch("")
                       }}
@@ -822,16 +827,16 @@ export function EnteralCalculator() {
 
   // Derived state
   const selectedProduct = useMemo(
-    () => ENTERAL_PRODUCTS.find((p) => p.name === formulaName && p.hcpcsCode === hcpcsCode),
+    () => ENTERAL_PRODUCTS.find((p) => p.name === formulaName && (p.hcpcsCode === hcpcsCode || p.altHcpcsCode === hcpcsCode)),
     [formulaName, hcpcsCode]
   )
 
   // Handlers
   const handleHcpcsChange = useCallback((code: string) => {
     setHcpcsCode(code)
-    // Only clear formula if it doesn't match the new code
+    // Only clear formula if it doesn't match the new code (check both primary and alt codes)
     const currentFormulaMatchesNewCode = ENTERAL_PRODUCTS.some(
-      (p) => p.name === formulaName && p.hcpcsCode === code
+      (p) => p.name === formulaName && (p.hcpcsCode === code || p.altHcpcsCode === code)
     )
     if (!currentFormulaMatchesNewCode) {
       setFormulaName("")
@@ -849,7 +854,7 @@ export function EnteralCalculator() {
     setHcpcsCode(code)
     setFormulaName(name)
     
-    const product = ENTERAL_PRODUCTS.find((p) => p.name === name && p.hcpcsCode === code)
+    const product = ENTERAL_PRODUCTS.find((p) => p.name === name && (p.hcpcsCode === code || p.altHcpcsCode === code))
     // Auto-set volume unit based on product type
     if (product?.isPowder && product.kcalPerGram !== null) {
       setVolumeUnit("g")
