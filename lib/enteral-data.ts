@@ -21,6 +21,7 @@ export interface EnteralProduct {
   name: string
   manufacturer: string
   hcpcsCode: string
+  altHcpcsCode?: string // alternative HCPCS code that can also be used for billing
   kcalPerMl: number | null // kcal per mL of liquid (null = user must enter manually)
   kcalPerGram: number | null // kcal per gram of powder (for powder-based formulas)
   isPowder?: boolean // true for powder formulas where kcal/g is the primary density
@@ -215,7 +216,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Kate Farms Peptide 1.0", manufacturer: "Kate Farms", hcpcsCode: "B4153", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "11 fl oz carton", mlPerUnit: 325, kcalPerUnit: 325 }] },
   { name: "Kate Farms Peptide 1.5", manufacturer: "Kate Farms", hcpcsCode: "B4153", kcalPerMl: 1.54, kcalPerGram: null, packaging: [{ type: "bottle", label: "11 fl oz bottle", mlPerUnit: 325, kcalPerUnit: 500 }] },
   // Nutricia - Elemental formulas
-  { name: "Neocate Splash", manufacturer: "Nutricia", hcpcsCode: "B4153", kcalPerMl: 0.6763, kcalPerGram: null, packaging: [{ type: "carton", label: "8 fl oz carton", mlPerUnit: 237, kcalPerUnit: 159 }] },
+  { name: "Neocate Splash", manufacturer: "Nutricia", hcpcsCode: "B4161", altHcpcsCode: "B4153", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "8 fl oz carton", mlPerUnit: 237, kcalPerUnit: 237 }] }, // Can also bill under B4153
   { name: "E028 Splash", manufacturer: "Nutricia", hcpcsCode: "B4153", kcalPerMl: 0.86, kcalPerGram: null, packaging: [{ type: "carton", label: "8.5 fl oz carton", mlPerUnit: 250, kcalPerUnit: 215 }] },
   // Mead Johnson
   { name: "Pregestimil", manufacturer: "Mead Johnson", hcpcsCode: "B4153", kcalPerMl: 0.6763, kcalPerGram: 5.1, isPowder: true, packaging: [{ type: "can", label: "16 oz can (powder)", gramsPerUnit: 454 }] },
@@ -309,7 +310,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "ProSource Gelatein 20", manufacturer: "Medtrition", hcpcsCode: "B4155", kcalPerMl: 0.88, kcalPerGram: null, packaging: [{ type: "bottle", label: "4 fl oz bottle", mlPerUnit: 118, kcalPerUnit: 104 }] },
   { name: "ProSource TF", manufacturer: "Medtrition", hcpcsCode: "B4155", kcalPerMl: null, kcalPerGram: 3.5, isPowder: true, packaging: [{ type: "packet", label: "11g packet", gramsPerUnit: 11, kcalPerUnit: 39 }] },
 
-  // ═══�������══════════════════════════════════════════════════════════════════════════
+  // ═══���������══════════════════════════════════════════════════════════════════════════
   // B4157: Inherited disease of metabolism (Adult)
   // ══════════════════════════════════════════════════════════════════════════════
   // Abbott "-2" powders: All 410 kcal per 100g = 4.1 kcal/g
@@ -349,7 +350,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Glytactin RTD 15", manufacturer: "Ajinomoto Cambrooke", hcpcsCode: "B4157", kcalPerMl: 0.52, kcalPerGram: null, packaging: [{ type: "bottle", label: "8.5 fl oz bottle", mlPerUnit: 250, kcalPerUnit: 130 }] },
   { name: "Glytactin Complete", manufacturer: "Ajinomoto Cambrooke", hcpcsCode: "B4157", kcalPerMl: null, kcalPerGram: null, packaging: [{ type: "packet", label: "34g packet", gramsPerUnit: 34 }] },
 
-  // ═════════════════════════════��══════════════════════════════════════════���═════
+  // ═════════════════════════════��══════════════════════════════════════���═══���═════
   // B4158: Pediatric, intact nutrients
   // ══════════════════════════════════════════════════════════════����═══════════════
   // Abbott
@@ -425,7 +426,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
 
   // ══════════════════════════════════════════════════════════════════════════════
   // B4161: Pediatric, hydrolyzed proteins (Hypoallergenic / Elemental)
-  // ════════════════════════���═════════════════════════════════════════════════════
+  // ═══════════════��════════���═════════════════════════════════════════════════════
   // Abbott - PediaSure Peptide
   { name: "PediaSure Peptide 1.0 Cal", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 237 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
   { name: "PediaSure Peptide 1.5 Cal", manufacturer: "Abbott", hcpcsCode: "B4161", kcalPerMl: 1.5, kcalPerGram: null, packaging: [{ type: "bottle", label: "8 fl oz bottle", mlPerUnit: 237, kcalPerUnit: 355 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1500 }] },
