@@ -521,7 +521,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
 
 export function getProductsByCode(code: string): EnteralProduct[] {
   return ENTERAL_PRODUCTS
-    .filter((p) => p.hcpcsCode === code)
+    .filter((p) => p.hcpcsCode === code || p.altHcpcsCode === code)
     .sort((a, b) => a.name.localeCompare(b.name))
 }
 
