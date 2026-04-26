@@ -816,6 +816,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   
   // Florida Blue-specific state
   const [floridaBlueDiagnosis, setFloridaBlueDiagnosis] = useState("")
+  const [floridaBlueReviewGenerated, setFloridaBlueReviewGenerated] = useState(false)
   
   // Horizon-specific state
   const [njMandates, setNjMandates] = useState<"yes" | "no" | null>(null)
@@ -829,6 +830,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   useEffect(() => {
     if (selectedProvider !== "florida-blue") {
       setFloridaBlueDiagnosis("")
+      setFloridaBlueReviewGenerated(false)
     }
   }, [selectedProvider])
   
@@ -948,12 +950,12 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
     return `This is a patient with ${floridaBlueDiagnosis.trim()}. The provider ordered ${narrativeFromCalculations}. ${mathNarrative}. Patient meets MCG as the EN is prescribed by a physician and is the sole source of nutrition.`
   }, [narrativeFromCalculations, mathNarrative, floridaBlueDiagnosis])
   
-  // Set the review text when Florida Blue template changes
+  // Set the review text when Florida Blue review is generated
   useEffect(() => {
-    if (selectedProvider === "florida-blue" && floridaBlueDiagnosis.trim()) {
+    if (selectedProvider === "florida-blue" && floridaBlueReviewGenerated && floridaBlueDiagnosis.trim()) {
       setReviewText(floridaBlueTemplate)
     }
-  }, [selectedProvider, floridaBlueTemplate, floridaBlueDiagnosis])
+  }, [selectedProvider, floridaBlueTemplate, floridaBlueDiagnosis, floridaBlueReviewGenerated])
   
   // Check if Horizon review can be generated
   const canGenerateHorizonReview = useMemo(() => {
@@ -1073,14 +1075,34 @@ The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patien
               <textarea
                 id="florida-blue-diagnosis"
                 value={floridaBlueDiagnosis}
-                onChange={(e) => setFloridaBlueDiagnosis(e.target.value)}
+                onChange={(e) => {
+                  setFloridaBlueDiagnosis(e.target.value)
+                  setFloridaBlueReviewGenerated(false)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && floridaBlueDiagnosis.trim()) {
+                    e.preventDefault()
+                    setFloridaBlueReviewGenerated(true)
+                  }
+                }}
                 className="min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
                 placeholder="Enter the patient's diagnosis..."
               />
             </div>
             
-            {/* Review Template - only show when diagnosis is entered */}
-            {floridaBlueDiagnosis.trim() && (
+            {/* Create Review Button - show when diagnosis entered but review not yet generated */}
+            {floridaBlueDiagnosis.trim() && !floridaBlueReviewGenerated && (
+              <Button
+                type="button"
+                onClick={() => setFloridaBlueReviewGenerated(true)}
+                className="w-full"
+              >
+                Create Review
+              </Button>
+            )}
+            
+            {/* Review Template - only show after Create is clicked */}
+            {floridaBlueReviewGenerated && (
               <>
                 <Label htmlFor="review-text" className="text-sm font-medium">
                   Review Template
