@@ -1,9 +1,13 @@
 import Link from "next/link"
 import { EnteralCalculator } from "@/components/enteral-calculator"
+import { DisplayModeToggle } from "@/components/display-mode-toggle"
 
 export default function Page() {
   return (
-    <main className="min-h-screen bg-background py-8 px-4 md:py-12 flex flex-col">
+    <main className="min-h-screen bg-background py-8 px-4 md:py-12 flex flex-col relative">
+      <div className="absolute top-4 right-4">
+        <DisplayModeToggle />
+      </div>
       <div className="flex-1">
         <EnteralCalculator />
       </div>
