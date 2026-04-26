@@ -895,6 +895,43 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
     return `${volumeDisplay} ${periodLabel}${feedingBreakdownText ? ` ${feedingBreakdownText}` : ""} of ${result.formulaName} (${densityLabel})`
   }, [result])
   
+  // Generate the math narrative for the review (mirrors ResultsSummary logic)
+  const mathNarrative = useMemo(() => {
+    const isDirectCalorieInput = result.densityType === null
+    const isMonthly = result.timePeriod === "month"
+    const periodLabelShort = isMonthly ? "/month" : "/day"
+    
+    const userInputVolume = result.dailyVolume
+    const caloriesForPeriod = isMonthly ? result.caloriesPerDay * 30 : result.caloriesPerDay
+    const unitsForPeriod = caloriesForPeriod / 100
+    
+    const isPackagingUnit = result.volumeUnit.startsWith("pkg-")
+    const unitLabelForMath = isPackagingUnit ? `(${result.volumeUnitLabel})` : result.volumeUnitLabel
+    
+    const kcalPerUserUnit = userInputVolume > 0 
+      ? (caloriesForPeriod / userInputVolume)
+      : result.densityValue
+    
+    const feedingUnitLabelForMath = result.feedingBreakdown 
+      ? (result.feedingBreakdown.feedingUnit.startsWith("pkg-") ? `(${result.feedingBreakdown.feedingUnitLabel})` : result.feedingBreakdown.feedingUnitLabel)
+      : null
+    
+    const mathLines: string[] = []
+    
+    if (result.feedingBreakdown && feedingUnitLabelForMath) {
+      mathLines.push(`${fmt(result.feedingBreakdown.amountPerFeeding)} ${feedingUnitLabelForMath} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day = ${fmt(userInputVolume)} ${unitLabelForMath}/day`)
+    }
+    if (isDirectCalorieInput) {
+      mathLines.push(`${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`)
+    } else {
+      mathLines.push(`${fmt(userInputVolume)} ${unitLabelForMath} x ${fmt(kcalPerUserUnit!)} kcal/${unitLabelForMath} = ${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`)
+    }
+    mathLines.push(`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`)
+    mathLines.push(`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`)
+    
+    return mathLines.join("; ")
+  }, [result])
+  
   // Generate Florida Blue template
   const floridaBlueTemplate = useMemo(() => {
     return `The provider ordered ${narrativeFromCalculations}, this is the patients sole source of nutrition and is medically necessary per current MCG.`
@@ -948,12 +985,16 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
         ? "Infant Formula Mandate (has a milk protein allergy and has tried and failed both goat- and soy-based formulas)"
         : "Inherited Metabolic Disease Mandate (has an Inherited Metabolic Disease)"
       
-      horizonTemplate = `This is a patient with ${diagnoses.trim()}. The provider ordered ${narrativeFromCalculations}. The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patient ${mandateStatusText}. The patient meets the ${mandateName}. Therefore this request is being approved.`
+      horizonTemplate = `This is a patient with ${diagnoses.trim()}. The provider ordered ${narrativeFromCalculations}. ${mathNarrative}.
+
+The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patient ${mandateStatusText}. The patient meets the ${mandateName}. Therefore this request is being approved.`
     } else {
       // Patient doesn't meet mandates - MCG path with permanent condition
       const mcgText = "Therefore the Horizon MCG was utilized."
       
-      horizonTemplate = `This is a patient with ${diagnoses.trim()}. The provider ordered ${narrativeFromCalculations}. The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patient ${mandateStatusText}. ${mcgText} The patient has a ${conditionTypeText} and the requested EN provides greater than 50% of the patient's daily nutrition. Therefore this request is being approved.`
+      horizonTemplate = `This is a patient with ${diagnoses.trim()}. The provider ordered ${narrativeFromCalculations}. ${mathNarrative}.
+
+The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patient ${mandateStatusText}. ${mcgText} The patient has a ${conditionTypeText} and the requested EN provides greater than 50% of the patient's daily nutrition. Therefore this request is being approved.`
     }
     
     setReviewText(horizonTemplate)
