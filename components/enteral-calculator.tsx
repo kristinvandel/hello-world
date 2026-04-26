@@ -1129,7 +1129,7 @@ The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patien
                   id="review-text"
                   value={reviewText}
                   onChange={(e) => setReviewText(e.target.value)}
-                  className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                  className="min-h-[280px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
                   placeholder="Review text will appear here..."
                 />
                 <div className="flex justify-between gap-2">
@@ -1311,7 +1311,7 @@ The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patien
                   id="horizon-review-text"
                   value={reviewText}
                   onChange={(e) => setReviewText(e.target.value)}
-                  className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                  className="min-h-[280px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
                   placeholder="Review text will appear here..."
                 />
                 <div className="flex justify-between gap-2">
