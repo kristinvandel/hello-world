@@ -818,6 +818,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   const [njMandates, setNjMandates] = useState<"yes" | "no" | null>(null)
   const [mandateType, setMandateType] = useState<"infant-formula" | "inherited-metabolic" | "neither" | null>(null)
   const [permanentCondition, setPermanentCondition] = useState<"prevents-absorption" | "prevents-reaching" | null>(null)
+  const [greaterThan50Percent, setGreaterThan50Percent] = useState(false)
   const [horizonReviewGenerated, setHorizonReviewGenerated] = useState(false)
   
   // Reset Horizon state when provider changes
@@ -826,6 +827,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
       setNjMandates(null)
       setMandateType(null)
       setPermanentCondition(null)
+      setGreaterThan50Percent(false)
       setHorizonReviewGenerated(false)
     }
   }, [selectedProvider])
@@ -834,6 +836,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   useEffect(() => {
     setMandateType(null)
     setPermanentCondition(null)
+    setGreaterThan50Percent(false)
     setHorizonReviewGenerated(false)
     setReviewText("")
   }, [njMandates])
@@ -842,6 +845,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   useEffect(() => {
     if (mandateType !== "neither") {
       setPermanentCondition(null)
+      setGreaterThan50Percent(false)
     }
     setHorizonReviewGenerated(false)
     setReviewText("")
@@ -903,12 +907,12 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   const canGenerateHorizonReview = useMemo(() => {
     // If opted into mandates and meets one of them
     if (njMandates === "yes" && mandateType && mandateType !== "neither") return true
-    // If opted into mandates but doesn't meet either, need permanent condition
-    if (njMandates === "yes" && mandateType === "neither" && permanentCondition) return true
-    // If not opted into mandates, need permanent condition
-    if (njMandates === "no" && permanentCondition) return true
+    // If opted into mandates but doesn't meet either, need permanent condition AND 50% checkbox
+    if (njMandates === "yes" && mandateType === "neither" && permanentCondition && greaterThan50Percent) return true
+    // If not opted into mandates, need permanent condition AND 50% checkbox
+    if (njMandates === "no" && permanentCondition && greaterThan50Percent) return true
     return false
-  }, [njMandates, mandateType, permanentCondition])
+  }, [njMandates, mandateType, permanentCondition, greaterThan50Percent])
   
   // Generate Horizon review
   const generateHorizonReview = () => {
@@ -932,8 +936,9 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
     }
     
     const njMandateText = njMandates === "yes" ? "This patient is opted into NJ Mandates. " : ""
+    const nutritionText = greaterThan50Percent ? " This request is greater than 50% of daily nutrition." : ""
     
-    const horizonTemplate = `The provider ordered ${narrativeFromCalculations}. ${njMandateText}This patient ${conditionText} and meets Horizon criteria for enteral formula coverage.`
+    const horizonTemplate = `The provider ordered ${narrativeFromCalculations}. ${njMandateText}This patient ${conditionText} and meets Horizon criteria for enteral formula coverage.${nutritionText}`
     
     setReviewText(horizonTemplate)
     setHorizonReviewGenerated(true)
@@ -1101,6 +1106,22 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
                     <span className="text-wrap">Prevents food from reaching the small bowel</span>
                   </Button>
                 </div>
+              </div>
+            )}
+            
+            {/* 50% Daily Nutrition Checkbox - shown when using permanent condition criteria */}
+            {(njMandates === "no" || mandateType === "neither") && permanentCondition && (
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3">
+                <input
+                  type="checkbox"
+                  id="greater-than-50"
+                  checked={greaterThan50Percent}
+                  onChange={(e) => setGreaterThan50Percent(e.target.checked)}
+                  className="size-4 rounded border-input"
+                />
+                <Label htmlFor="greater-than-50" className="text-sm font-medium cursor-pointer">
+                  Request is greater than 50% of daily nutrition
+                </Label>
               </div>
             )}
             
