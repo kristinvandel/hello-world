@@ -814,6 +814,9 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   const [reviewText, setReviewText] = useState("")
   const [copied, setCopied] = useState(false)
   
+  // Florida Blue-specific state
+  const [floridaBlueDiagnosis, setFloridaBlueDiagnosis] = useState("")
+  
   // Horizon-specific state
   const [njMandates, setNjMandates] = useState<"yes" | "no" | null>(null)
   const [mandateType, setMandateType] = useState<"infant-formula" | "inherited-metabolic" | "neither" | null>(null)
@@ -821,6 +824,13 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   const [greaterThan50Percent, setGreaterThan50Percent] = useState(false)
   const [diagnoses, setDiagnoses] = useState("")
   const [horizonReviewGenerated, setHorizonReviewGenerated] = useState(false)
+  
+  // Reset Florida Blue state when provider changes
+  useEffect(() => {
+    if (selectedProvider !== "florida-blue") {
+      setFloridaBlueDiagnosis("")
+    }
+  }, [selectedProvider])
   
   // Reset Horizon state when provider changes
   useEffect(() => {
@@ -934,15 +944,16 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   
   // Generate Florida Blue template
   const floridaBlueTemplate = useMemo(() => {
-    return `The provider ordered ${narrativeFromCalculations}, this is the patients sole source of nutrition and is medically necessary per current MCG.`
-  }, [narrativeFromCalculations])
+    if (!floridaBlueDiagnosis.trim()) return ""
+    return `This is a patient with ${floridaBlueDiagnosis.trim()}. The provider ordered ${narrativeFromCalculations}. ${mathNarrative}. Patient meets MCG as the EN is prescribed by a physician and is the sole source of nutrition.`
+  }, [narrativeFromCalculations, mathNarrative, floridaBlueDiagnosis])
   
-  // Set the review text when Florida Blue is selected
+  // Set the review text when Florida Blue template changes
   useEffect(() => {
-    if (selectedProvider === "florida-blue") {
+    if (selectedProvider === "florida-blue" && floridaBlueDiagnosis.trim()) {
       setReviewText(floridaBlueTemplate)
     }
-  }, [selectedProvider, floridaBlueTemplate])
+  }, [selectedProvider, floridaBlueTemplate, floridaBlueDiagnosis])
   
   // Check if Horizon review can be generated
   const canGenerateHorizonReview = useMemo(() => {
@@ -1054,37 +1065,56 @@ The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patien
               </div>
             </div>
             
-            <Label htmlFor="review-text" className="text-sm font-medium">
-              Review Template
-            </Label>
-            <textarea
-              id="review-text"
-              value={reviewText}
-              onChange={(e) => setReviewText(e.target.value)}
-              className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
-              placeholder="Review text will appear here..."
-            />
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="gap-1.5"
-                onClick={handleCopy}
-              >
-                {copied ? (
-                  <>
-                    <Check className="size-4 text-green-600" />
-                    <span className="text-green-600">Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="size-4" />
-                    <span>Copy Review</span>
-                  </>
-                )}
-              </Button>
+            {/* Diagnosis Input */}
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="florida-blue-diagnosis" className="text-sm font-medium">
+                Diagnosis
+              </Label>
+              <textarea
+                id="florida-blue-diagnosis"
+                value={floridaBlueDiagnosis}
+                onChange={(e) => setFloridaBlueDiagnosis(e.target.value)}
+                className="min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                placeholder="Enter the patient's diagnosis..."
+              />
             </div>
+            
+            {/* Review Template - only show when diagnosis is entered */}
+            {floridaBlueDiagnosis.trim() && (
+              <>
+                <Label htmlFor="review-text" className="text-sm font-medium">
+                  Review Template
+                </Label>
+                <textarea
+                  id="review-text"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                  placeholder="Review text will appear here..."
+                />
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={handleCopy}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="size-4 text-green-600" />
+                        <span className="text-green-600">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="size-4" />
+                        <span>Copy Review</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         )}
         
