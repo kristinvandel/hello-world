@@ -816,7 +816,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   
   // Horizon-specific state
   const [njMandates, setNjMandates] = useState<"yes" | "no" | null>(null)
-  const [mandateType, setMandateType] = useState<"infant-formula" | "inherited-metabolic" | null>(null)
+  const [mandateType, setMandateType] = useState<"infant-formula" | "inherited-metabolic" | "neither" | null>(null)
   const [permanentCondition, setPermanentCondition] = useState<"prevents-absorption" | "prevents-reaching" | null>(null)
   const [horizonReviewGenerated, setHorizonReviewGenerated] = useState(false)
   
@@ -837,6 +837,15 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
     setHorizonReviewGenerated(false)
     setReviewText("")
   }, [njMandates])
+  
+  // Reset permanent condition when mandate type changes (unless "neither" is selected)
+  useEffect(() => {
+    if (mandateType !== "neither") {
+      setPermanentCondition(null)
+    }
+    setHorizonReviewGenerated(false)
+    setReviewText("")
+  }, [mandateType])
   
   // Generate the narrative text for the review (similar to ResultsSummary logic)
   const narrativeFromCalculations = useMemo(() => {
@@ -892,7 +901,11 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   
   // Check if Horizon review can be generated
   const canGenerateHorizonReview = useMemo(() => {
-    if (njMandates === "yes" && mandateType) return true
+    // If opted into mandates and meets one of them
+    if (njMandates === "yes" && mandateType && mandateType !== "neither") return true
+    // If opted into mandates but doesn't meet either, need permanent condition
+    if (njMandates === "yes" && mandateType === "neither" && permanentCondition) return true
+    // If not opted into mandates, need permanent condition
     if (njMandates === "no" && permanentCondition) return true
     return false
   }, [njMandates, mandateType, permanentCondition])
@@ -901,13 +914,16 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   const generateHorizonReview = () => {
     let conditionText = ""
     
-    if (njMandates === "yes") {
+    if (njMandates === "yes" && mandateType && mandateType !== "neither") {
+      // Patient meets one of the NJ Mandates
       if (mandateType === "infant-formula") {
         conditionText = "has a milk protein allergy and has tried and failed both goat- and soy-based formulas"
       } else if (mandateType === "inherited-metabolic") {
         conditionText = "has an Inherited Metabolic Disease"
       }
-    } else if (njMandates === "no") {
+    } else {
+      // Patient doesn't meet mandates (either not opted in, or opted in but doesn't qualify)
+      // Fall back to permanent condition criteria
       if (permanentCondition === "prevents-absorption") {
         conditionText = "has a permanent condition that prevents absorption in the small bowel"
       } else if (permanentCondition === "prevents-reaching") {
@@ -1048,12 +1064,21 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
                   >
                     <span className="text-wrap">Inherited Metabolic Disease Mandate</span>
                   </Button>
+                  <Button
+                    type="button"
+                    variant={mandateType === "neither" ? "default" : "outline"}
+                    onClick={() => setMandateType("neither")}
+                    className="justify-start text-left h-auto py-2 px-3"
+                    size="sm"
+                  >
+                    <span className="text-wrap">Neither</span>
+                  </Button>
                 </div>
               </div>
             )}
             
-            {/* Step 2b: If NO - Permanent Condition */}
-            {njMandates === "no" && (
+            {/* Step 2b: If NO or Neither - Permanent Condition */}
+            {(njMandates === "no" || mandateType === "neither") && (
               <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3">
                 <Label className="text-sm font-medium">Does the patient have a permanent condition that:</Label>
                 <div className="flex flex-col gap-2">
