@@ -819,6 +819,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   const [mandateType, setMandateType] = useState<"infant-formula" | "inherited-metabolic" | "neither" | null>(null)
   const [permanentCondition, setPermanentCondition] = useState<"prevents-absorption" | "prevents-reaching" | null>(null)
   const [greaterThan50Percent, setGreaterThan50Percent] = useState(false)
+  const [diagnoses, setDiagnoses] = useState("")
   const [horizonReviewGenerated, setHorizonReviewGenerated] = useState(false)
   
   // Reset Horizon state when provider changes
@@ -828,6 +829,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
       setMandateType(null)
       setPermanentCondition(null)
       setGreaterThan50Percent(false)
+      setDiagnoses("")
       setHorizonReviewGenerated(false)
     }
   }, [selectedProvider])
@@ -837,6 +839,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
     setMandateType(null)
     setPermanentCondition(null)
     setGreaterThan50Percent(false)
+    setDiagnoses("")
     setHorizonReviewGenerated(false)
     setReviewText("")
   }, [njMandates])
@@ -847,6 +850,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
       setPermanentCondition(null)
       setGreaterThan50Percent(false)
     }
+    setDiagnoses("")
     setHorizonReviewGenerated(false)
     setReviewText("")
   }, [mandateType])
@@ -905,6 +909,8 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   
   // Check if Horizon review can be generated
   const canGenerateHorizonReview = useMemo(() => {
+    // Always require diagnoses
+    if (!diagnoses.trim()) return false
     // If opted into mandates and meets one of them
     if (njMandates === "yes" && mandateType && mandateType !== "neither") return true
     // If opted into mandates but doesn't meet either, need permanent condition AND 50% checkbox
@@ -912,33 +918,43 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
     // If not opted into mandates, need permanent condition AND 50% checkbox
     if (njMandates === "no" && permanentCondition && greaterThan50Percent) return true
     return false
-  }, [njMandates, mandateType, permanentCondition, greaterThan50Percent])
+  }, [njMandates, mandateType, permanentCondition, greaterThan50Percent, diagnoses])
   
   // Generate Horizon review
   const generateHorizonReview = () => {
-    let conditionText = ""
+    const isOptedIntoMandates = njMandates === "yes"
+    const meetsMandateCriteria = mandateType && mandateType !== "neither"
     
-    if (njMandates === "yes" && mandateType && mandateType !== "neither") {
-      // Patient meets one of the NJ Mandates
-      if (mandateType === "infant-formula") {
-        conditionText = "has a milk protein allergy and has tried and failed both goat- and soy-based formulas"
-      } else if (mandateType === "inherited-metabolic") {
-        conditionText = "has an Inherited Metabolic Disease"
-      }
-    } else {
-      // Patient doesn't meet mandates (either not opted in, or opted in but doesn't qualify)
-      // Fall back to permanent condition criteria
-      if (permanentCondition === "prevents-absorption") {
-        conditionText = "has a permanent condition that impairs absorption in the small bowel"
-      } else if (permanentCondition === "prevents-reaching") {
-        conditionText = "has a permanent condition that prevents food from reaching the small bowel"
-      }
+    // Build the mandate status text
+    const mandateStatusText = isOptedIntoMandates
+      ? meetsMandateCriteria
+        ? "is opted into the NJ Mandates and does meet mandate criteria"
+        : "is opted into the NJ Mandates and does not meet mandate criteria"
+      : "is not opted into the NJ Mandates"
+    
+    // Determine condition type text for non-mandate path
+    let conditionTypeText = ""
+    if (permanentCondition === "prevents-absorption") {
+      conditionTypeText = "permanent condition that impairs absorption in the small bowel"
+    } else if (permanentCondition === "prevents-reaching") {
+      conditionTypeText = "permanent condition that prevents food from reaching the small bowel"
     }
     
-    const njMandateText = njMandates === "yes" ? "This patient is opted into NJ Mandates. " : ""
-    const nutritionText = greaterThan50Percent ? " This request is greater than 50% of daily nutrition." : ""
+    let horizonTemplate = ""
     
-    const horizonTemplate = `The provider ordered ${narrativeFromCalculations}. ${njMandateText}This patient ${conditionText} and meets Horizon criteria for enteral formula coverage.${nutritionText}`
+    if (meetsMandateCriteria) {
+      // Patient meets mandate criteria - simpler approval path
+      const mandateName = mandateType === "infant-formula" 
+        ? "Infant Formula Mandate (has a milk protein allergy and has tried and failed both goat- and soy-based formulas)"
+        : "Inherited Metabolic Disease Mandate (has an Inherited Metabolic Disease)"
+      
+      horizonTemplate = `This is a patient with ${diagnoses.trim()}. The provider ordered ${narrativeFromCalculations}. The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patient ${mandateStatusText}. The patient meets the ${mandateName}. Therefore this request is being approved.`
+    } else {
+      // Patient doesn't meet mandates - MCG path with permanent condition
+      const mcgText = "Therefore the Horizon MCG was utilized."
+      
+      horizonTemplate = `This is a patient with ${diagnoses.trim()}. The provider ordered ${narrativeFromCalculations}. The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patient ${mandateStatusText}. ${mcgText} The patient has a ${conditionTypeText} and the requested EN provides greater than 50% of the patient's daily nutrition. Therefore this request is being approved.`
+    }
     
     setReviewText(horizonTemplate)
     setHorizonReviewGenerated(true)
@@ -1122,6 +1138,23 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
                 <Label htmlFor="greater-than-50" className="text-sm font-medium cursor-pointer">
                   Request is greater than 50% of daily nutrition
                 </Label>
+              </div>
+            )}
+            
+            {/* Diagnoses Input - shown when criteria are met (before final generation) */}
+            {((njMandates === "yes" && mandateType && mandateType !== "neither") || 
+              ((njMandates === "no" || mandateType === "neither") && permanentCondition && greaterThan50Percent)) && (
+              <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3">
+                <Label htmlFor="diagnoses" className="text-sm font-medium">
+                  Relevant Diagnoses
+                </Label>
+                <textarea
+                  id="diagnoses"
+                  value={diagnoses}
+                  onChange={(e) => setDiagnoses(e.target.value)}
+                  className="min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                  placeholder="Enter the patient's relevant diagnoses..."
+                />
               </div>
             )}
             
