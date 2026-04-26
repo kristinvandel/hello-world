@@ -814,6 +814,30 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   const [reviewText, setReviewText] = useState("")
   const [copied, setCopied] = useState(false)
   
+  // Horizon-specific state
+  const [njMandates, setNjMandates] = useState<"yes" | "no" | null>(null)
+  const [mandateType, setMandateType] = useState<"infant-formula" | "inherited-metabolic" | null>(null)
+  const [permanentCondition, setPermanentCondition] = useState<"prevents-absorption" | "prevents-reaching" | null>(null)
+  const [horizonReviewGenerated, setHorizonReviewGenerated] = useState(false)
+  
+  // Reset Horizon state when provider changes
+  useEffect(() => {
+    if (selectedProvider !== "horizon") {
+      setNjMandates(null)
+      setMandateType(null)
+      setPermanentCondition(null)
+      setHorizonReviewGenerated(false)
+    }
+  }, [selectedProvider])
+  
+  // Reset dependent state when NJ Mandates changes
+  useEffect(() => {
+    setMandateType(null)
+    setPermanentCondition(null)
+    setHorizonReviewGenerated(false)
+    setReviewText("")
+  }, [njMandates])
+  
   // Generate the narrative text for the review (similar to ResultsSummary logic)
   const narrativeFromCalculations = useMemo(() => {
     const isDirectCalorieInput = result.densityType === null
@@ -863,10 +887,41 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   useEffect(() => {
     if (selectedProvider === "florida-blue") {
       setReviewText(floridaBlueTemplate)
-    } else if (selectedProvider === "horizon") {
-      setReviewText("") // Will be configured later
     }
   }, [selectedProvider, floridaBlueTemplate])
+  
+  // Check if Horizon review can be generated
+  const canGenerateHorizonReview = useMemo(() => {
+    if (njMandates === "yes" && mandateType) return true
+    if (njMandates === "no" && permanentCondition) return true
+    return false
+  }, [njMandates, mandateType, permanentCondition])
+  
+  // Generate Horizon review
+  const generateHorizonReview = () => {
+    let conditionText = ""
+    
+    if (njMandates === "yes") {
+      if (mandateType === "infant-formula") {
+        conditionText = "has a milk protein allergy and has tried and failed both goat- and soy-based formulas"
+      } else if (mandateType === "inherited-metabolic") {
+        conditionText = "has an Inherited Metabolic Disease"
+      }
+    } else if (njMandates === "no") {
+      if (permanentCondition === "prevents-absorption") {
+        conditionText = "has a permanent condition that prevents absorption in the small bowel"
+      } else if (permanentCondition === "prevents-reaching") {
+        conditionText = "has a permanent condition that prevents food from reaching the small bowel"
+      }
+    }
+    
+    const njMandateText = njMandates === "yes" ? "This patient is opted into NJ Mandates. " : ""
+    
+    const horizonTemplate = `The provider ordered ${narrativeFromCalculations}. ${njMandateText}This patient ${conditionText} and meets Horizon criteria for enteral formula coverage.`
+    
+    setReviewText(horizonTemplate)
+    setHorizonReviewGenerated(true)
+  }
   
   const handleCopy = async () => {
     try {
@@ -942,12 +997,135 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
           </div>
         )}
         
-        {/* Horizon Placeholder - to be configured later */}
+        {/* Horizon Flow */}
         {selectedProvider === "horizon" && (
-          <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/20 p-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              Horizon template coming soon...
-            </p>
+          <div className="flex flex-col gap-4">
+            {/* Step 1: NJ Mandates */}
+            <div className="flex flex-col gap-2">
+              <Label className="text-sm font-medium">Is the patient opted into NJ Mandates?</Label>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant={njMandates === "yes" ? "default" : "outline"}
+                  onClick={() => setNjMandates("yes")}
+                  className="flex-1"
+                  size="sm"
+                >
+                  Yes
+                </Button>
+                <Button
+                  type="button"
+                  variant={njMandates === "no" ? "default" : "outline"}
+                  onClick={() => setNjMandates("no")}
+                  className="flex-1"
+                  size="sm"
+                >
+                  No
+                </Button>
+              </div>
+            </div>
+            
+            {/* Step 2a: If YES - Mandate Type */}
+            {njMandates === "yes" && (
+              <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3">
+                <Label className="text-sm font-medium">Which mandate does the patient meet criteria for?</Label>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    type="button"
+                    variant={mandateType === "infant-formula" ? "default" : "outline"}
+                    onClick={() => setMandateType("infant-formula")}
+                    className="justify-start text-left h-auto py-2 px-3"
+                    size="sm"
+                  >
+                    <span className="text-wrap">Infant Formula Mandate</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={mandateType === "inherited-metabolic" ? "default" : "outline"}
+                    onClick={() => setMandateType("inherited-metabolic")}
+                    className="justify-start text-left h-auto py-2 px-3"
+                    size="sm"
+                  >
+                    <span className="text-wrap">Inherited Metabolic Disease Mandate</span>
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {/* Step 2b: If NO - Permanent Condition */}
+            {njMandates === "no" && (
+              <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3">
+                <Label className="text-sm font-medium">Does the patient have a permanent condition that:</Label>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    type="button"
+                    variant={permanentCondition === "prevents-absorption" ? "default" : "outline"}
+                    onClick={() => setPermanentCondition("prevents-absorption")}
+                    className="justify-start text-left h-auto py-2 px-3"
+                    size="sm"
+                  >
+                    <span className="text-wrap">Prevents absorption in the small bowel</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={permanentCondition === "prevents-reaching" ? "default" : "outline"}
+                    onClick={() => setPermanentCondition("prevents-reaching")}
+                    className="justify-start text-left h-auto py-2 px-3"
+                    size="sm"
+                  >
+                    <span className="text-wrap">Prevents food from reaching the small bowel</span>
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {/* Generate Review Button */}
+            {canGenerateHorizonReview && !horizonReviewGenerated && (
+              <Button
+                type="button"
+                onClick={generateHorizonReview}
+                className="w-full"
+              >
+                Create Review
+              </Button>
+            )}
+            
+            {/* Generated Horizon Review */}
+            {horizonReviewGenerated && (
+              <div className="flex flex-col gap-3">
+                <Label htmlFor="horizon-review-text" className="text-sm font-medium">
+                  Review Template
+                </Label>
+                <textarea
+                  id="horizon-review-text"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                  placeholder="Review text will appear here..."
+                />
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={handleCopy}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="size-4 text-green-600" />
+                        <span className="text-green-600">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="size-4" />
+                        <span>Copy Review</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
