@@ -809,7 +809,7 @@ function VolumeCalculator({
 
 // ─── Create Your Review Section ────────────────────────────────────────────────
 
-function CreateReviewSection({ result }: { result: CalculationResult }) {
+function CreateReviewSection({ result, onResetCalculator }: { result: CalculationResult; onResetCalculator: () => void }) {
   const [selectedProvider, setSelectedProvider] = useState<"horizon" | "florida-blue" | null>(null)
   const [reviewText, setReviewText] = useState("")
   const [copied, setCopied] = useState(false)
@@ -839,6 +839,8 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
     setGreaterThan50Percent(false)
     setDiagnoses("")
     setHorizonReviewGenerated(false)
+    // Reset the main calculator
+    onResetCalculator()
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
   
@@ -1392,6 +1394,22 @@ export function EnteralCalculator() {
     setResult(null)
     setErrors([])
   }, [formulaName])
+
+  const handleResetCalculator = useCallback(() => {
+    setHcpcsCode("")
+    setFormulaName("")
+    setVolumeAmount("")
+    setVolumeUnit("mL")
+    setVolumeTimePeriod("day")
+    setStartDate(undefined)
+    setEndDate(undefined)
+    setResult(null)
+    setErrors([])
+    setShowDensityOverride(false)
+    setDensityOverride("")
+    setDensityOverrideUnit("kcal/mL")
+    setFeedingBreakdown(null)
+  }, [])
 
   const handleFormulaSelect = useCallback((code: string, name: string) => {
     setHcpcsCode(code)
@@ -2089,7 +2107,7 @@ onValueChange={(val: VolumeUnit) => {
       {result && <ResultsSummary result={result} />}
       
       {/* Create Your Review Section */}
-      {result && <CreateReviewSection result={result} />}
+      {result && <CreateReviewSection result={result} onResetCalculator={handleResetCalculator} />}
     </div>
   )
 }
