@@ -1041,6 +1041,19 @@ The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patien
         {/* Florida Blue Template */}
         {selectedProvider === "florida-blue" && (
           <div className="flex flex-col gap-3">
+            {/* Warning Alert */}
+            <div className="rounded-lg border border-amber-500/50 bg-amber-50 p-3 dark:bg-amber-950/30">
+              <div className="flex gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5">
+                  <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+                </svg>
+                <div className="text-sm text-amber-800 dark:text-amber-200">
+                  <p className="font-medium">Important: Check Group Language</p>
+                  <p className="mt-1">Be sure to check the patient&apos;s applicable group number and send for admin denial if group language is not met. If group language is met, patient must ALSO meet the MCG.</p>
+                </div>
+              </div>
+            </div>
+            
             <Label htmlFor="review-text" className="text-sm font-medium">
               Review Template
             </Label>
