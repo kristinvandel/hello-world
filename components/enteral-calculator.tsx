@@ -983,7 +983,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
       // Patient meets mandate criteria - simpler approval path
       const mandateName = mandateType === "infant-formula" 
         ? "Infant Formula Mandate (has a milk protein allergy and has tried and failed both goat- and soy-based formulas)"
-        : "Inherited Metabolic Disease Mandate (has an Inherited Metabolic Disease)"
+        : `Inherited Metabolic Disease Mandate (patient with diagnosis of ${diagnoses.trim()})`
       
       horizonTemplate = `This is a patient with ${diagnoses.trim()}. The provider ordered ${narrativeFromCalculations}. ${mathNarrative}.
 
