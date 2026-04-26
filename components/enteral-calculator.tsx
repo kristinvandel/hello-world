@@ -925,7 +925,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
       // Patient doesn't meet mandates (either not opted in, or opted in but doesn't qualify)
       // Fall back to permanent condition criteria
       if (permanentCondition === "prevents-absorption") {
-        conditionText = "has a permanent condition that prevents absorption in the small bowel"
+        conditionText = "has a permanent condition that impairs absorption in the small bowel"
       } else if (permanentCondition === "prevents-reaching") {
         conditionText = "has a permanent condition that prevents food from reaching the small bowel"
       }
@@ -1089,7 +1089,7 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
                     className="justify-start text-left h-auto py-2 px-3"
                     size="sm"
                   >
-                    <span className="text-wrap">Prevents absorption in the small bowel</span>
+                    <span className="text-wrap">Impairs absorption in the small bowel</span>
                   </Button>
                   <Button
                     type="button"
