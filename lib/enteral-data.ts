@@ -350,7 +350,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Glytactin RTD 15", manufacturer: "Ajinomoto Cambrooke", hcpcsCode: "B4157", kcalPerMl: 0.52, kcalPerGram: null, packaging: [{ type: "bottle", label: "8.5 fl oz bottle", mlPerUnit: 250, kcalPerUnit: 130 }] },
   { name: "Glytactin Complete", manufacturer: "Ajinomoto Cambrooke", hcpcsCode: "B4157", kcalPerMl: null, kcalPerGram: null, packaging: [{ type: "packet", label: "34g packet", gramsPerUnit: 34 }] },
 
-  // ═════════════════════════════��══════════════════════════════════════���═══���═════
+  // ════════════════════════��════��══════════════════════════════════════���═══���═════
   // B4158: Pediatric, intact nutrients
   // ══════════════════════════════════════════════════════════════����═══════════════
   // Abbott
@@ -370,7 +370,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Nutren Junior with Fiber", manufacturer: "Nestle", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 250 }, { type: "carton", label: "1000 mL carton", mlPerUnit: 1000, kcalPerUnit: 1000 }] },
   { name: "Boost Kid Essentials 1.0", manufacturer: "Nestle", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "8.01 fl oz carton", mlPerUnit: 237, kcalPerUnit: 237 }] },
   { name: "Boost Kid Essentials 1.0 with Fiber", manufacturer: "Nestle", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "8.01 fl oz carton", mlPerUnit: 237, kcalPerUnit: 237 }] },
-  { name: "Compleat Pediatric Standard", manufacturer: "Nestle", hcpcsCode: "B4158", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 250 }] },
+  { name: "Compleat Pediatric Standard", manufacturer: "Nestle", hcpcsCode: "B4160", kcalPerMl: 1.0, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 250 }] },
   { name: "Compleat Pediatric Original Reduced Calorie RTF", manufacturer: "Nestle", hcpcsCode: "B4149", kcalPerMl: 0.6, kcalPerGram: null, packaging: [{ type: "carton", label: "250 mL carton", mlPerUnit: 250, kcalPerUnit: 150 }] },
   { name: "Good Start (GentlePro)", manufacturer: "Nestle", hcpcsCode: "B4158", kcalPerMl: 0.6763, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "12.7 oz can", gramsPerUnit: 360 }, { type: "can", label: "20 oz can", gramsPerUnit: 567 }] },
   { name: "Good Start Soothe", manufacturer: "Nestle", hcpcsCode: "B4158", kcalPerMl: 0.6763, kcalPerGram: 5.0, isPowder: true, packaging: [{ type: "can", label: "12.4 oz can", gramsPerUnit: 352 }, { type: "can", label: "19.4 oz can", gramsPerUnit: 550 }] },
