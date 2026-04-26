@@ -807,6 +807,154 @@ function VolumeCalculator({
   )
 }
 
+// ─── Create Your Review Section ────────────────────────────────────────────────
+
+function CreateReviewSection({ result }: { result: CalculationResult }) {
+  const [selectedProvider, setSelectedProvider] = useState<"horizon" | "florida-blue" | null>(null)
+  const [reviewText, setReviewText] = useState("")
+  const [copied, setCopied] = useState(false)
+  
+  // Generate the narrative text for the review (similar to ResultsSummary logic)
+  const narrativeFromCalculations = useMemo(() => {
+    const isDirectCalorieInput = result.densityType === null
+    const isMonthly = result.timePeriod === "month"
+    const periodLabel = isMonthly ? "per month" : "per day"
+    
+    const userInputVolume = result.dailyVolume
+    const caloriesForPeriod = isMonthly ? result.caloriesPerDay * 30 : result.caloriesPerDay
+    
+    // Format volume display
+    const isPackagingUnit = result.volumeUnit.startsWith("pkg-")
+    const volumeDisplay = isPackagingUnit 
+      ? `${fmt(userInputVolume)} x ${result.volumeUnitLabel}${userInputVolume !== 1 ? "s" : ""}`
+      : `${fmt(userInputVolume)} ${result.volumeUnitLabel}`
+    
+    // Calculate kcal per user's unit for display
+    const kcalPerUserUnit = userInputVolume > 0 
+      ? (caloriesForPeriod / userInputVolume)
+      : result.densityValue
+    
+    // Build density label
+    const densityLabel = isDirectCalorieInput
+      ? "direct calorie input"
+      : isPackagingUnit
+        ? `${fmt(kcalPerUserUnit!)} calories per (${result.volumeUnitLabel})`
+        : `${fmt(kcalPerUserUnit!)} calories per ${result.volumeUnitLabel}`
+    
+    // Build feeding breakdown text if available
+    const feedingBreakdownText = result.feedingBreakdown 
+      ? `(${fmt(result.feedingBreakdown.amountPerFeeding)} ${result.feedingBreakdown.feedingUnitLabel} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day)`
+      : ""
+    
+    // Build the narrative
+    if (isDirectCalorieInput) {
+      return `${fmt(caloriesForPeriod)} calories ${periodLabel} of ${result.formulaName || "the requested formula"}`
+    }
+    
+    return `${volumeDisplay} ${periodLabel}${feedingBreakdownText ? ` ${feedingBreakdownText}` : ""} of ${result.formulaName} (${densityLabel})`
+  }, [result])
+  
+  // Generate Florida Blue template
+  const floridaBlueTemplate = useMemo(() => {
+    return `The provider ordered ${narrativeFromCalculations}, this is the patients sole source of nutrition and is medically necessary per current MCG.`
+  }, [narrativeFromCalculations])
+  
+  // Set the review text when Florida Blue is selected
+  useEffect(() => {
+    if (selectedProvider === "florida-blue") {
+      setReviewText(floridaBlueTemplate)
+    } else if (selectedProvider === "horizon") {
+      setReviewText("") // Will be configured later
+    }
+  }, [selectedProvider, floridaBlueTemplate])
+  
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(reviewText)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy text:", err)
+    }
+  }
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Create Your Review</CardTitle>
+        <CardDescription>Select your insurance provider to generate a review template</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        {/* Provider Selection */}
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant={selectedProvider === "horizon" ? "default" : "outline"}
+            onClick={() => setSelectedProvider("horizon")}
+            className="flex-1"
+          >
+            Horizon
+          </Button>
+          <Button
+            type="button"
+            variant={selectedProvider === "florida-blue" ? "default" : "outline"}
+            onClick={() => setSelectedProvider("florida-blue")}
+            className="flex-1"
+          >
+            Florida Blue
+          </Button>
+        </div>
+        
+        {/* Florida Blue Template */}
+        {selectedProvider === "florida-blue" && (
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="review-text" className="text-sm font-medium">
+              Review Template
+            </Label>
+            <textarea
+              id="review-text"
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+              placeholder="Review text will appear here..."
+            />
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="gap-1.5"
+                onClick={handleCopy}
+              >
+                {copied ? (
+                  <>
+                    <Check className="size-4 text-green-600" />
+                    <span className="text-green-600">Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="size-4" />
+                    <span>Copy Review</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {/* Horizon Placeholder - to be configured later */}
+        {selectedProvider === "horizon" && (
+          <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/20 p-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              Horizon template coming soon...
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 // ─── Main Calculator ───────────────────────────────────────────────────────────
 
 export function EnteralCalculator() {
@@ -1544,6 +1692,9 @@ onValueChange={(val: VolumeUnit) => {
       {/* Results */}
       {result && <ResultsCard result={result} />}
       {result && <ResultsSummary result={result} />}
+      
+      {/* Create Your Review Section */}
+      {result && <CreateReviewSection result={result} />}
     </div>
   )
 }
