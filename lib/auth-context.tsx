@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 
 // Simple hardcoded credentials
 const VALID_USERNAME = "enteralcalc"
-const VALID_PASSWORD = "enteral2024"
+const VALID_PASSWORD = "enteral2026"
 
 interface AuthContextType {
   isAuthenticated: boolean
