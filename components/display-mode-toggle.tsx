@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { useTheme } from 'next-themes'
-import { Monitor, Moon, Eye } from 'lucide-react'
+import { Monitor, Moon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -35,8 +35,6 @@ export function DisplayModeToggle() {
     switch (theme) {
       case 'dark':
         return <Moon className="h-4 w-4" />
-      case 'high-contrast':
-        return <Eye className="h-4 w-4" />
       default:
         return <Monitor className="h-4 w-4" />
     }
@@ -61,10 +59,6 @@ export function DisplayModeToggle() {
           <DropdownMenuRadioItem value="dark" className="cursor-pointer">
             <Moon className="mr-2 h-4 w-4" />
             Dark Mode
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="high-contrast" className="cursor-pointer">
-            <Eye className="mr-2 h-4 w-4" />
-            High Contrast
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
