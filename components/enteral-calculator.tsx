@@ -826,6 +826,22 @@ function CreateReviewSection({ result }: { result: CalculationResult }) {
   const [diagnoses, setDiagnoses] = useState("")
   const [horizonReviewGenerated, setHorizonReviewGenerated] = useState(false)
   
+  // Reset all and scroll to top
+  const handleResetAndReturnToTop = () => {
+    setSelectedProvider(null)
+    setReviewText("")
+    setCopied(false)
+    setFloridaBlueDiagnosis("")
+    setFloridaBlueReviewGenerated(false)
+    setNjMandates(null)
+    setMandateType(null)
+    setPermanentCondition(null)
+    setGreaterThan50Percent(false)
+    setDiagnoses("")
+    setHorizonReviewGenerated(false)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+  
   // Reset Florida Blue state when provider changes
   useEffect(() => {
     if (selectedProvider !== "florida-blue") {
@@ -1114,7 +1130,15 @@ The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patien
                   className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
                   placeholder="Review text will appear here..."
                 />
-                <div className="flex justify-end">
+                <div className="flex justify-between gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResetAndReturnToTop}
+                  >
+                    Reset &amp; Return to Top
+                  </Button>
                   <Button
                     type="button"
                     variant="secondary"
@@ -1288,7 +1312,15 @@ The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patien
                   className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
                   placeholder="Review text will appear here..."
                 />
-                <div className="flex justify-end">
+                <div className="flex justify-between gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResetAndReturnToTop}
+                  >
+                    Reset &amp; Return to Top
+                  </Button>
                   <Button
                     type="button"
                     variant="secondary"
