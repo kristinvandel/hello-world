@@ -461,14 +461,14 @@ function ResultsCard({ result }: { result: CalculationResult }) {
         <div className={`grid gap-3 text-sm ${result.densityValue !== null ? "grid-cols-2" : "grid-cols-3"}`}>
           {result.densityValue !== null && (
             <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
-              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+              <span className="text-xs text-foreground/70 font-medium uppercase tracking-wide">
                 Daily Volume
               </span>
               <span className="font-semibold text-foreground">
                 {fmt(result.dailyVolume)} {result.volumeUnitLabel}/day
               </span>
               {result.feedingBreakdown && (
-                <span className="text-xs text-muted-foreground mt-0.5">
+                <span className="text-xs text-foreground/60 mt-0.5">
                   ({fmt(result.feedingBreakdown.amountPerFeeding)} {result.feedingBreakdown.feedingUnitLabel} x {fmt(result.feedingBreakdown.timesPerDay)} feedings)
                 </span>
               )}
@@ -476,7 +476,7 @@ function ResultsCard({ result }: { result: CalculationResult }) {
           )}
           {result.densityValue !== null && result.densityType !== null && (
             <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
-              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+              <span className="text-xs text-foreground/70 font-medium uppercase tracking-wide">
                 Caloric Density
               </span>
               <span className="font-semibold text-foreground">
@@ -485,7 +485,7 @@ function ResultsCard({ result }: { result: CalculationResult }) {
             </div>
           )}
           <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
-            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+            <span className="text-xs text-foreground/70 font-medium uppercase tracking-wide">
               Calories/Day
             </span>
             <span className="font-semibold text-foreground">
@@ -493,7 +493,7 @@ function ResultsCard({ result }: { result: CalculationResult }) {
             </span>
           </div>
           <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
-            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+            <span className="text-xs text-foreground/70 font-medium uppercase tracking-wide">
               Number of Days
             </span>
             <span className="font-semibold text-foreground">
@@ -505,7 +505,7 @@ function ResultsCard({ result }: { result: CalculationResult }) {
         <Separator />
 
         <div className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
-          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+          <span className="text-xs text-foreground/70 font-medium uppercase tracking-wide">
             Total Calories
           </span>
           <span className="font-semibold text-foreground">
