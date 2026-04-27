@@ -1169,6 +1169,24 @@ The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patien
         {/* Horizon Flow */}
         {selectedProvider === "horizon" && (
           <div className="flex flex-col gap-4">
+            {/* Review Hierarchy Info */}
+            <div className="rounded-lg border border-blue-500/50 bg-blue-50 p-3 dark:bg-blue-950/30">
+              <div className="flex gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 text-blue-600 dark:text-blue-500 shrink-0 mt-0.5">
+                  <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+                </svg>
+                <div className="text-sm text-blue-800 dark:text-blue-200">
+                  <p className="font-medium">Horizon Review Hierarchy</p>
+                  <ol className="mt-1 list-decimal list-inside space-y-0.5">
+                    <li>Check NJ Mandates first</li>
+                    <li>If does not meet, move to MCG</li>
+                    <li>If still does not meet, move to Grid</li>
+                    <li>If does not meet Grid or group number not listed on Grid, elevate to MD for review</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+            
             {/* Step 1: NJ Mandates */}
             <div className="flex flex-col gap-2">
               <Label className="text-sm font-medium">Is the patient opted into NJ Mandates?</Label>
