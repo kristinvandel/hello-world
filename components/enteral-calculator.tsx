@@ -1073,12 +1073,12 @@ The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patien
         {selectedProvider === "florida-blue" && (
           <div className="flex flex-col gap-3">
             {/* Warning Alert */}
-            <div className="rounded-lg border border-amber-500/50 bg-amber-50 p-3 dark:bg-amber-950/30">
+            <div className="rounded-lg border border-blue-500/50 bg-blue-50 p-3 dark:bg-blue-950/30">
               <div className="flex gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 text-blue-600 dark:text-blue-500 shrink-0 mt-0.5">
                   <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
                 </svg>
-                <div className="text-sm text-amber-800 dark:text-amber-200">
+                <div className="text-sm text-blue-800 dark:text-blue-200">
                   <p className="font-medium">Important: Check Group Language</p>
                   <p className="mt-1">Be sure to check the patient&apos;s applicable group number and send for admin denial if group language is not met. If group language is met, patient must ALSO meet the MCG.</p>
                 </div>
@@ -1170,12 +1170,12 @@ The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patien
         {selectedProvider === "horizon" && (
           <div className="flex flex-col gap-4">
             {/* Review Hierarchy Info */}
-            <div className="rounded-lg border border-blue-500/50 bg-blue-50 p-3 dark:bg-blue-950/30">
+            <div className="rounded-lg border border-orange-400/50 bg-orange-50 p-3 dark:bg-orange-950/30">
               <div className="flex gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 text-blue-600 dark:text-blue-500 shrink-0 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 text-orange-500 dark:text-orange-400 shrink-0 mt-0.5">
                   <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
                 </svg>
-                <div className="text-sm text-blue-800 dark:text-blue-200">
+                <div className="text-sm text-orange-800 dark:text-orange-200">
                   <p className="font-medium">Horizon Review Hierarchy</p>
                   <p className="mt-1 italic">Stop and approve as soon as patient meets criteria at any step:</p>
                   <ol className="mt-1 list-decimal list-inside space-y-0.5">
