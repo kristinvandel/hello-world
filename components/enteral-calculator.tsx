@@ -1177,10 +1177,11 @@ The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patien
                 </svg>
                 <div className="text-sm text-blue-800 dark:text-blue-200">
                   <p className="font-medium">Horizon Review Hierarchy</p>
+                  <p className="mt-1 italic">Stop and approve as soon as patient meets criteria at any step:</p>
                   <ol className="mt-1 list-decimal list-inside space-y-0.5">
-                    <li>Check NJ Mandates first</li>
-                    <li>If does not meet, move to MCG</li>
-                    <li>If still does not meet, move to Grid</li>
+                    <li>Check NJ Mandates first — <span className="font-medium">if meets, approve</span></li>
+                    <li>If does not meet, move to MCG — <span className="font-medium">if meets, approve</span></li>
+                    <li>If still does not meet, move to Grid — <span className="font-medium">if meets, approve</span></li>
                     <li>If does not meet Grid or group number not listed on Grid, elevate to MD for review</li>
                   </ol>
                 </div>
