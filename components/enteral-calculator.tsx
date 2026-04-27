@@ -807,6 +807,570 @@ function VolumeCalculator({
   )
 }
 
+// ─── Create Your Review Section ────────────────────────────────────────────────
+
+function CreateReviewSection({ result, onResetCalculator }: { result: CalculationResult; onResetCalculator: () => void }) {
+  const [selectedProvider, setSelectedProvider] = useState<"horizon" | "florida-blue" | null>(null)
+  const [reviewText, setReviewText] = useState("")
+  const [copied, setCopied] = useState(false)
+  
+  // Florida Blue-specific state
+  const [floridaBlueDiagnosis, setFloridaBlueDiagnosis] = useState("")
+  const [floridaBlueReviewGenerated, setFloridaBlueReviewGenerated] = useState(false)
+  
+  // Horizon-specific state
+  const [njMandates, setNjMandates] = useState<"yes" | "no" | null>(null)
+  const [mandateType, setMandateType] = useState<"infant-formula" | "inherited-metabolic" | "neither" | null>(null)
+  const [permanentCondition, setPermanentCondition] = useState<"prevents-absorption" | "prevents-reaching" | null>(null)
+  const [greaterThan50Percent, setGreaterThan50Percent] = useState(false)
+  const [diagnoses, setDiagnoses] = useState("")
+  const [horizonReviewGenerated, setHorizonReviewGenerated] = useState(false)
+  
+  // Reset all and scroll to top
+  const handleResetAndReturnToTop = () => {
+    setSelectedProvider(null)
+    setReviewText("")
+    setCopied(false)
+    setFloridaBlueDiagnosis("")
+    setFloridaBlueReviewGenerated(false)
+    setNjMandates(null)
+    setMandateType(null)
+    setPermanentCondition(null)
+    setGreaterThan50Percent(false)
+    setDiagnoses("")
+    setHorizonReviewGenerated(false)
+    // Reset the main calculator
+    onResetCalculator()
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+  
+  // Reset Florida Blue state when provider changes
+  useEffect(() => {
+    if (selectedProvider !== "florida-blue") {
+      setFloridaBlueDiagnosis("")
+      setFloridaBlueReviewGenerated(false)
+    }
+  }, [selectedProvider])
+  
+  // Reset Horizon state when provider changes
+  useEffect(() => {
+    if (selectedProvider !== "horizon") {
+      setNjMandates(null)
+      setMandateType(null)
+      setPermanentCondition(null)
+      setGreaterThan50Percent(false)
+      setDiagnoses("")
+      setHorizonReviewGenerated(false)
+    }
+  }, [selectedProvider])
+  
+  // Reset dependent state when NJ Mandates changes
+  useEffect(() => {
+    setMandateType(null)
+    setPermanentCondition(null)
+    setGreaterThan50Percent(false)
+    setDiagnoses("")
+    setHorizonReviewGenerated(false)
+    setReviewText("")
+  }, [njMandates])
+  
+  // Reset permanent condition when mandate type changes (unless "neither" is selected)
+  useEffect(() => {
+    if (mandateType !== "neither") {
+      setPermanentCondition(null)
+      setGreaterThan50Percent(false)
+    }
+    setDiagnoses("")
+    setHorizonReviewGenerated(false)
+    setReviewText("")
+  }, [mandateType])
+  
+  // Generate the narrative text for the review (similar to ResultsSummary logic)
+  const narrativeFromCalculations = useMemo(() => {
+    const isDirectCalorieInput = result.densityType === null
+    const isMonthly = result.timePeriod === "month"
+    const periodLabel = isMonthly ? "per month" : "per day"
+    
+    const userInputVolume = result.dailyVolume
+    const caloriesForPeriod = isMonthly ? result.caloriesPerDay * 30 : result.caloriesPerDay
+    
+    // Format volume display
+    const isPackagingUnit = result.volumeUnit.startsWith("pkg-")
+    const volumeDisplay = isPackagingUnit 
+      ? `${fmt(userInputVolume)} x ${result.volumeUnitLabel}${userInputVolume !== 1 ? "s" : ""}`
+      : `${fmt(userInputVolume)} ${result.volumeUnitLabel}`
+    
+    // Calculate kcal per user's unit for display
+    const kcalPerUserUnit = userInputVolume > 0 
+      ? (caloriesForPeriod / userInputVolume)
+      : result.densityValue
+    
+    // Build density label
+    const densityLabel = isDirectCalorieInput
+      ? "direct calorie input"
+      : isPackagingUnit
+        ? `${fmt(kcalPerUserUnit!)} calories per (${result.volumeUnitLabel})`
+        : `${fmt(kcalPerUserUnit!)} calories per ${result.volumeUnitLabel}`
+    
+    // Build feeding breakdown text if available
+    const feedingBreakdownText = result.feedingBreakdown 
+      ? `(${fmt(result.feedingBreakdown.amountPerFeeding)} ${result.feedingBreakdown.feedingUnitLabel} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day)`
+      : ""
+    
+    // Build the narrative
+    if (isDirectCalorieInput) {
+      return `${fmt(caloriesForPeriod)} calories ${periodLabel} of ${result.formulaName || "the requested formula"}`
+    }
+    
+    return `${volumeDisplay} ${periodLabel}${feedingBreakdownText ? ` ${feedingBreakdownText}` : ""} of ${result.formulaName} (${densityLabel})`
+  }, [result])
+  
+  // Generate the math narrative for the review (mirrors ResultsSummary logic)
+  const mathNarrative = useMemo(() => {
+    const isDirectCalorieInput = result.densityType === null
+    const isMonthly = result.timePeriod === "month"
+    const periodLabelShort = isMonthly ? "/month" : "/day"
+    
+    const userInputVolume = result.dailyVolume
+    const caloriesForPeriod = isMonthly ? result.caloriesPerDay * 30 : result.caloriesPerDay
+    const unitsForPeriod = caloriesForPeriod / 100
+    
+    const isPackagingUnit = result.volumeUnit.startsWith("pkg-")
+    const unitLabelForMath = isPackagingUnit ? `(${result.volumeUnitLabel})` : result.volumeUnitLabel
+    
+    const kcalPerUserUnit = userInputVolume > 0 
+      ? (caloriesForPeriod / userInputVolume)
+      : result.densityValue
+    
+    const feedingUnitLabelForMath = result.feedingBreakdown 
+      ? (result.feedingBreakdown.feedingUnit.startsWith("pkg-") ? `(${result.feedingBreakdown.feedingUnitLabel})` : result.feedingBreakdown.feedingUnitLabel)
+      : null
+    
+    const mathLines: string[] = []
+    
+    if (result.feedingBreakdown && feedingUnitLabelForMath) {
+      mathLines.push(`${fmt(result.feedingBreakdown.amountPerFeeding)} ${feedingUnitLabelForMath} x ${fmt(result.feedingBreakdown.timesPerDay)} feedings/day = ${fmt(userInputVolume)} ${unitLabelForMath}/day`)
+    }
+    if (isDirectCalorieInput) {
+      mathLines.push(`${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`)
+    } else {
+      mathLines.push(`${fmt(userInputVolume)} ${unitLabelForMath} x ${fmt(kcalPerUserUnit!)} kcal/${unitLabelForMath} = ${fmt(caloriesForPeriod)} calories${periodLabelShort}${isMonthly ? ` → ${fmt(result.caloriesPerDay)} calories/day avg` : ""}`)
+    }
+    mathLines.push(`${fmt(result.caloriesPerDay)} calories/day x ${result.numDays} day${result.numDays !== 1 ? "s" : ""} = ${fmt(result.totalCalories)} total calories`)
+    mathLines.push(`${fmt(result.totalCalories)} total calories / 100 = ${fmt(result.totalUnits)} units per requested date span`)
+    
+    return mathLines.join("; ")
+  }, [result])
+  
+  // Generate Florida Blue template
+  const floridaBlueTemplate = useMemo(() => {
+    if (!floridaBlueDiagnosis.trim()) return ""
+    return `This is a patient with ${floridaBlueDiagnosis.trim()}. The provider ordered ${narrativeFromCalculations}. ${mathNarrative}. Patient meets MCG as the EN is prescribed by a physician and is the sole source of nutrition.`
+  }, [narrativeFromCalculations, mathNarrative, floridaBlueDiagnosis])
+  
+  // Set the review text when Florida Blue review is generated
+  useEffect(() => {
+    if (selectedProvider === "florida-blue" && floridaBlueReviewGenerated && floridaBlueDiagnosis.trim()) {
+      setReviewText(floridaBlueTemplate)
+    }
+  }, [selectedProvider, floridaBlueTemplate, floridaBlueDiagnosis, floridaBlueReviewGenerated])
+  
+  // Check if Horizon review can be generated
+  const canGenerateHorizonReview = useMemo(() => {
+    // Always require diagnoses
+    if (!diagnoses.trim()) return false
+    // If opted into mandates and meets one of them
+    if (njMandates === "yes" && mandateType && mandateType !== "neither") return true
+    // If opted into mandates but doesn't meet either, need permanent condition AND 50% checkbox
+    if (njMandates === "yes" && mandateType === "neither" && permanentCondition && greaterThan50Percent) return true
+    // If not opted into mandates, need permanent condition AND 50% checkbox
+    if (njMandates === "no" && permanentCondition && greaterThan50Percent) return true
+    return false
+  }, [njMandates, mandateType, permanentCondition, greaterThan50Percent, diagnoses])
+  
+  // Generate Horizon review
+  const generateHorizonReview = () => {
+    const isOptedIntoMandates = njMandates === "yes"
+    const meetsMandateCriteria = mandateType && mandateType !== "neither"
+    
+    // Build the mandate status text
+    const mandateStatusText = isOptedIntoMandates
+      ? meetsMandateCriteria
+        ? "is opted into the NJ Mandates and does meet mandate criteria"
+        : "is opted into the NJ Mandates and does not meet mandate criteria"
+      : "is not opted into the NJ Mandates"
+    
+    // Determine condition type text for non-mandate path
+    let conditionTypeText = ""
+    if (permanentCondition === "prevents-absorption") {
+      conditionTypeText = "permanent condition that impairs absorption in the small bowel"
+    } else if (permanentCondition === "prevents-reaching") {
+      conditionTypeText = "permanent condition that prevents food from reaching the small bowel"
+    }
+    
+    let horizonTemplate = ""
+    
+    if (meetsMandateCriteria) {
+      // Patient meets mandate criteria - simpler approval path
+      const mandateName = mandateType === "infant-formula" 
+        ? "Infant Formula Mandate (has a milk protein allergy and has tried and failed both goat- and soy-based formulas)"
+        : `Inherited Metabolic Disease Mandate (patient with diagnosis of ${diagnoses.trim()})`
+      
+      horizonTemplate = `This is a patient with ${diagnoses.trim()}. The provider ordered ${narrativeFromCalculations}. ${mathNarrative}.
+
+The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patient ${mandateStatusText}. The patient meets the ${mandateName}. Therefore this request is being approved.`
+    } else {
+      // Patient doesn't meet mandates - MCG path with permanent condition
+      const mcgText = "Therefore the Horizon MCG was utilized."
+      
+      horizonTemplate = `This is a patient with ${diagnoses.trim()}. The provider ordered ${narrativeFromCalculations}. ${mathNarrative}.
+
+The Horizon Enteral Nutrition Hierarchy was utilized for this review. The patient ${mandateStatusText}. ${mcgText} The patient has a ${conditionTypeText} and the requested EN provides greater than 50% of the patient's daily nutrition. Therefore this request is being approved.`
+    }
+    
+    setReviewText(horizonTemplate)
+    setHorizonReviewGenerated(true)
+  }
+  
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(reviewText)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy text:", err)
+    }
+  }
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Create Your Review</CardTitle>
+        <CardDescription>Select your insurance provider to generate a review template</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        {/* Provider Selection */}
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant={selectedProvider === "horizon" ? "default" : "outline"}
+            onClick={() => setSelectedProvider("horizon")}
+            className="flex-1"
+          >
+            Horizon
+          </Button>
+          <Button
+            type="button"
+            variant={selectedProvider === "florida-blue" ? "default" : "outline"}
+            onClick={() => setSelectedProvider("florida-blue")}
+            className="flex-1"
+          >
+            Florida Blue
+          </Button>
+        </div>
+        
+        {/* Florida Blue Template */}
+        {selectedProvider === "florida-blue" && (
+          <div className="flex flex-col gap-3">
+            {/* Warning Alert */}
+            <div className="rounded-lg border border-blue-500/50 bg-blue-50 p-3 dark:bg-blue-950/30">
+              <div className="flex gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 text-blue-600 dark:text-blue-500 shrink-0 mt-0.5">
+                  <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+                </svg>
+                <div className="text-sm text-blue-800 dark:text-blue-200">
+                  <p className="font-medium">Important: Check Group Language</p>
+                  <p className="mt-1">Be sure to check the patient&apos;s applicable group number and send for admin denial if group language is not met. If group language is met, patient must ALSO meet the MCG.</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Diagnosis Input */}
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="florida-blue-diagnosis" className="text-sm font-medium">
+                Diagnosis
+              </Label>
+              <textarea
+                id="florida-blue-diagnosis"
+                value={floridaBlueDiagnosis}
+                onChange={(e) => {
+                  setFloridaBlueDiagnosis(e.target.value)
+                  setFloridaBlueReviewGenerated(false)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && floridaBlueDiagnosis.trim()) {
+                    e.preventDefault()
+                    setFloridaBlueReviewGenerated(true)
+                  }
+                }}
+                className="min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                placeholder="Enter the patient's diagnosis..."
+              />
+            </div>
+            
+            {/* Create Review Button - show when diagnosis entered but review not yet generated */}
+            {floridaBlueDiagnosis.trim() && !floridaBlueReviewGenerated && (
+              <Button
+                type="button"
+                onClick={() => setFloridaBlueReviewGenerated(true)}
+                className="w-full"
+              >
+                Create Review
+              </Button>
+            )}
+            
+            {/* Review Template - only show after Create is clicked */}
+            {floridaBlueReviewGenerated && (
+              <>
+                <Label htmlFor="review-text" className="text-sm font-medium">
+                  Review Template
+                </Label>
+                <textarea
+                  id="review-text"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  className="min-h-[280px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                  placeholder="Review text will appear here..."
+                />
+                <div className="flex justify-between gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResetAndReturnToTop}
+                  >
+                    Reset &amp; Return to Top
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={handleCopy}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="size-4 text-green-600" />
+                        <span className="text-green-600">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="size-4" />
+                        <span>Copy Review</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+        
+        {/* Horizon Flow */}
+        {selectedProvider === "horizon" && (
+          <div className="flex flex-col gap-4">
+            {/* Review Hierarchy Info */}
+            <div className="rounded-lg border border-orange-400/50 bg-orange-50 p-3 dark:bg-orange-950/30">
+              <div className="flex gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 text-orange-500 dark:text-orange-400 shrink-0 mt-0.5">
+                  <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+                </svg>
+                <div className="text-sm text-orange-800 dark:text-orange-200">
+                  <p className="font-medium">Horizon Review Hierarchy</p>
+                  <p className="mt-1 italic">Stop and approve as soon as patient meets criteria at any step:</p>
+                  <ol className="mt-1 list-decimal list-inside space-y-0.5">
+                    <li>Check NJ Mandates first — <span className="font-medium">if meets, approve</span></li>
+                    <li>If does not meet, move to MCG — <span className="font-medium">if meets, approve</span></li>
+                    <li>If still does not meet, move to Grid — <span className="font-medium">if meets, approve</span></li>
+                    <li>If does not meet Grid or group number not listed on Grid, elevate to MD for review</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+            
+            {/* Step 1: NJ Mandates */}
+            <div className="flex flex-col gap-2">
+              <Label className="text-sm font-medium">Is the patient opted into NJ Mandates?</Label>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant={njMandates === "yes" ? "default" : "outline"}
+                  onClick={() => setNjMandates("yes")}
+                  className="flex-1"
+                  size="sm"
+                >
+                  Yes
+                </Button>
+                <Button
+                  type="button"
+                  variant={njMandates === "no" ? "default" : "outline"}
+                  onClick={() => setNjMandates("no")}
+                  className="flex-1"
+                  size="sm"
+                >
+                  No
+                </Button>
+              </div>
+            </div>
+            
+            {/* Step 2a: If YES - Mandate Type */}
+            {njMandates === "yes" && (
+              <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3">
+                <Label className="text-sm font-medium">Which mandate does the patient meet criteria for?</Label>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    type="button"
+                    variant={mandateType === "infant-formula" ? "default" : "outline"}
+                    onClick={() => setMandateType("infant-formula")}
+                    className="justify-start text-left h-auto py-2 px-3"
+                    size="sm"
+                  >
+                    <span className="text-wrap">Infant Formula Mandate</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={mandateType === "inherited-metabolic" ? "default" : "outline"}
+                    onClick={() => setMandateType("inherited-metabolic")}
+                    className="justify-start text-left h-auto py-2 px-3"
+                    size="sm"
+                  >
+                    <span className="text-wrap">Inherited Metabolic Disease Mandate</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={mandateType === "neither" ? "default" : "outline"}
+                    onClick={() => setMandateType("neither")}
+                    className="justify-start text-left h-auto py-2 px-3"
+                    size="sm"
+                  >
+                    <span className="text-wrap">Neither</span>
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {/* Step 2b: If NO or Neither - Permanent Condition */}
+            {(njMandates === "no" || mandateType === "neither") && (
+              <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3">
+                <Label className="text-sm font-medium">Does the patient have a permanent condition that:</Label>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    type="button"
+                    variant={permanentCondition === "prevents-absorption" ? "default" : "outline"}
+                    onClick={() => setPermanentCondition("prevents-absorption")}
+                    className="justify-start text-left h-auto py-2 px-3"
+                    size="sm"
+                  >
+                    <span className="text-wrap">Impairs absorption in the small bowel</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={permanentCondition === "prevents-reaching" ? "default" : "outline"}
+                    onClick={() => setPermanentCondition("prevents-reaching")}
+                    className="justify-start text-left h-auto py-2 px-3"
+                    size="sm"
+                  >
+                    <span className="text-wrap">Prevents food from reaching the small bowel</span>
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {/* 50% Daily Nutrition Checkbox - shown when using permanent condition criteria */}
+            {(njMandates === "no" || mandateType === "neither") && permanentCondition && (
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3">
+                <input
+                  type="checkbox"
+                  id="greater-than-50"
+                  checked={greaterThan50Percent}
+                  onChange={(e) => setGreaterThan50Percent(e.target.checked)}
+                  className="size-4 rounded border-input"
+                />
+                <Label htmlFor="greater-than-50" className="text-sm font-medium cursor-pointer">
+                  Request is greater than 50% of daily nutrition
+                </Label>
+              </div>
+            )}
+            
+            {/* Diagnoses Input - shown when criteria are met (before final generation) */}
+            {((njMandates === "yes" && mandateType && mandateType !== "neither") || 
+              ((njMandates === "no" || mandateType === "neither") && permanentCondition && greaterThan50Percent)) && (
+              <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3">
+                <Label htmlFor="diagnoses" className="text-sm font-medium">
+                  Relevant Diagnoses
+                </Label>
+                <textarea
+                  id="diagnoses"
+                  value={diagnoses}
+                  onChange={(e) => setDiagnoses(e.target.value)}
+                  className="min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                  placeholder="Enter the patient's relevant diagnoses..."
+                />
+              </div>
+            )}
+            
+            {/* Generate Review Button */}
+            {canGenerateHorizonReview && !horizonReviewGenerated && (
+              <Button
+                type="button"
+                onClick={generateHorizonReview}
+                className="w-full"
+              >
+                Create Review
+              </Button>
+            )}
+            
+            {/* Generated Horizon Review */}
+            {horizonReviewGenerated && (
+              <div className="flex flex-col gap-3">
+                <Label htmlFor="horizon-review-text" className="text-sm font-medium">
+                  Review Template
+                </Label>
+                <textarea
+                  id="horizon-review-text"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  className="min-h-[280px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                  placeholder="Review text will appear here..."
+                />
+                <div className="flex justify-between gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResetAndReturnToTop}
+                  >
+                    Reset &amp; Return to Top
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={handleCopy}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="size-4 text-green-600" />
+                        <span className="text-green-600">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="size-4" />
+                        <span>Copy Review</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 // ─── Main Calculator ───────────────────────────────────────────────────────────
 
 export function EnteralCalculator() {
@@ -849,6 +1413,22 @@ export function EnteralCalculator() {
     setResult(null)
     setErrors([])
   }, [formulaName])
+
+  const handleResetCalculator = useCallback(() => {
+    setHcpcsCode("")
+    setFormulaName("")
+    setVolumeAmount("")
+    setVolumeUnit("mL")
+    setVolumeTimePeriod("day")
+    setStartDate(undefined)
+    setEndDate(undefined)
+    setResult(null)
+    setErrors([])
+    setShowDensityOverride(false)
+    setDensityOverride("")
+    setDensityOverrideUnit("kcal/mL")
+    setFeedingBreakdown(null)
+  }, [])
 
   const handleFormulaSelect = useCallback((code: string, name: string) => {
     setHcpcsCode(code)
@@ -1544,6 +2124,9 @@ onValueChange={(val: VolumeUnit) => {
       {/* Results */}
       {result && <ResultsCard result={result} />}
       {result && <ResultsSummary result={result} />}
+      
+      {/* Create Your Review Section */}
+      {result && <CreateReviewSection result={result} onResetCalculator={handleResetCalculator} />}
     </div>
   )
 }
