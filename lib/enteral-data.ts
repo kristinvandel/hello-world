@@ -329,6 +329,13 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "PKU Lophlex LQ", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: 0.6, kcalPerGram: null, packaging: [{ type: "pouch", label: "125 mL pouch", mlPerUnit: 125, kcalPerUnit: 75 }] },
   { name: "PKU Sphere", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: null, kcalPerGram: null, packaging: [{ type: "packet", label: "35g sachet", gramsPerUnit: 35 }] },
   { name: "Phlexy-10 System (PKU)", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: null, kcalPerGram: 3.0, isPowder: true, packaging: [{ type: "packet", label: "20g sachet", gramsPerUnit: 20, kcalPerUnit: 60 }] },
+  // Periflex (Nutricia) - PKU formulas
+  { name: "Periflex Infant (PKU)", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: null, kcalPerGram: 4.7, isPowder: true, packaging: [{ type: "can", label: "400g can", gramsPerUnit: 400 }] },
+  { name: "Periflex Junior (PKU)", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: null, kcalPerGram: 3.9, isPowder: true, packaging: [{ type: "can", label: "400g can", gramsPerUnit: 400 }] },
+  { name: "Periflex Junior Plus (PKU)", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: null, kcalPerGram: 3.9, isPowder: true, packaging: [{ type: "can", label: "400g can", gramsPerUnit: 400 }] },
+  { name: "Periflex Advance (PKU)", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: null, kcalPerGram: 3.4, isPowder: true, packaging: [{ type: "packet", label: "50g sachet", gramsPerUnit: 50, kcalPerUnit: 170 }] },
+  { name: "Periflex LQ 10 (PKU)", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: 0.65, kcalPerGram: null, packaging: [{ type: "pouch", label: "62.5 mL pouch", mlPerUnit: 62.5, kcalPerUnit: 41 }] },
+  { name: "Periflex LQ 20 (PKU)", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: 0.65, kcalPerGram: null, packaging: [{ type: "pouch", label: "125 mL pouch", mlPerUnit: 125, kcalPerUnit: 81 }] },
   { name: "UCD Anamix Junior", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: 0.9, kcalPerGram: 3.9, isPowder: true, packaging: [{ type: "can", label: "400g can", gramsPerUnit: 400 }] },
   { name: "MSUD Anamix Junior", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: null, kcalPerGram: 3.8, isPowder: true, packaging: [{ type: "can", label: "400g can", gramsPerUnit: 400 }] },
   { name: "HCU Anamix", manufacturer: "Nutricia", hcpcsCode: "B4157", kcalPerMl: null, kcalPerGram: 3.8, isPowder: true, packaging: [{ type: "can", label: "400g can", gramsPerUnit: 400 }] },
@@ -350,7 +357,7 @@ export const ENTERAL_PRODUCTS: EnteralProduct[] = [
   { name: "Glytactin RTD 15", manufacturer: "Ajinomoto Cambrooke", hcpcsCode: "B4157", kcalPerMl: 0.52, kcalPerGram: null, packaging: [{ type: "bottle", label: "8.5 fl oz bottle", mlPerUnit: 250, kcalPerUnit: 130 }] },
   { name: "Glytactin Complete", manufacturer: "Ajinomoto Cambrooke", hcpcsCode: "B4157", kcalPerMl: null, kcalPerGram: null, packaging: [{ type: "packet", label: "34g packet", gramsPerUnit: 34 }] },
 
-  // ════════════════════════��════��══════════════════════════════════════���═══���═════
+  // ═══════════════════���════��════��══════════════════════════════════════���═══���═════
   // B4158: Pediatric, intact nutrients
   // ══════════════════════════════════════════════════════════════����═══════════════
   // Abbott
