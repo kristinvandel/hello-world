@@ -1560,6 +1560,16 @@ onValueChange={(val: VolumeUnit) => {
       {/* Results */}
       {result && <ResultsCard result={result} />}
       {result && <ResultsSummary result={result} />}
+
+      {/* Clear All button at bottom after results */}
+      {result && (
+        <div className="flex justify-center">
+          <Button onClick={handleReset} variant="outline" size="lg">
+            <RotateCcw className="mr-2 size-4" />
+            Clear All
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
