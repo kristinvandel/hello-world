@@ -292,9 +292,13 @@ function DatePickerField({
   const [open, setOpen] = useState(false)
   const [textValue, setTextValue] = useState(value ? format(value, "MM/dd/yyyy") : "")
 
-  // Sync text when calendar picks a date
+  // Sync text when calendar picks a date or when value is cleared
   useEffect(() => {
-    if (value) setTextValue(format(value, "MM/dd/yyyy"))
+    if (value) {
+      setTextValue(format(value, "MM/dd/yyyy"))
+    } else {
+      setTextValue("")
+    }
   }, [value])
 
   // Helper to convert 2-digit year to 4-digit year
@@ -679,15 +683,25 @@ function VolumeCalculator({
   onApply,
   densityType,
   packaging,
+  resetKey,
 }: {
   onApply: (amount: string, unit: VolumeUnit, feedingBreakdown: { amountPerFeeding: number; timesPerDay: number }) => void
   densityType: DensityType
   packaging?: EnteralProduct["packaging"]
+  resetKey?: number
 }) {
   const [open, setOpen] = useState(false)
   const [amountPerFeeding, setAmountPerFeeding] = useState("")
   const [feedingUnit, setFeedingUnit] = useState<VolumeUnit>(densityType === "kcal/g" ? "g" : "mL")
   const [timesPerDay, setTimesPerDay] = useState("")
+
+  // Reset internal state when resetKey changes (triggered by form reset)
+  useEffect(() => {
+    setOpen(false)
+    setAmountPerFeeding("")
+    setTimesPerDay("")
+    setFeedingUnit(densityType === "kcal/g" ? "g" : "mL")
+  }, [resetKey, densityType])
 
   // Sync feedingUnit when densityType changes (only reset to default unit when density type changes)
   useEffect(() => {
@@ -823,8 +837,9 @@ export function EnteralCalculator() {
   const [showDensityOverride, setShowDensityOverride] = useState(false)
   const [densityOverride, setDensityOverride] = useState("")
   const [densityOverrideUnit, setDensityOverrideUnit] = useState<"kcal/mL" | "kcal/oz" | "kcal/g">("kcal/mL")
-  const [feedingBreakdown, setFeedingBreakdown] = useState<{ amountPerFeeding: number; timesPerDay: number; feedingUnit: VolumeUnit } | null>(null)
-
+const [feedingBreakdown, setFeedingBreakdown] = useState<{ amountPerFeeding: number; timesPerDay: number; feedingUnit: VolumeUnit } | null>(null)
+  const [resetKey, setResetKey] = useState(0) // Used to reset CalculateDailyVolume internal state
+  
   // Derived state
   const selectedProduct = useMemo(
     () => ENTERAL_PRODUCTS.find((p) => p.name === formulaName && (p.hcpcsCode === hcpcsCode || p.altHcpcsCode === hcpcsCode)),
@@ -1072,14 +1087,14 @@ export function EnteralCalculator() {
     setDensityOverride("")
     setDensityOverrideUnit("kcal/mL")
     setFeedingBreakdown(null)
-    // Preserve valid date span - only clear if dates are invalid
-    if (!startDate || !endDate || endDate < startDate) {
-      setStartDate(undefined)
-      setEndDate(undefined)
-    }
+    // Always clear dates on reset
+    setStartDate(undefined)
+    setEndDate(undefined)
     setResult(null)
     setErrors([])
-  }, [startDate, endDate])
+    // Increment reset key to force CalculateDailyVolume to reset its internal state
+    setResetKey(prev => prev + 1)
+  }, [])
 
   return (
     <div className={cn("flex flex-col gap-6 w-full max-w-xl mx-auto", result && "calculated")}>
@@ -1367,6 +1382,7 @@ onValueChange={(val: VolumeUnit) => {
                 <VolumeCalculator
                   densityType={selectedProduct?.isPowder ? "kcal/g" : "kcal/mL"}
                   packaging={selectedProduct?.packaging}
+                  resetKey={resetKey}
                   onApply={(amount, unit, breakdown) => {
                     setVolumeAmount(amount)
                     setVolumeUnit(unit)
@@ -1544,6 +1560,16 @@ onValueChange={(val: VolumeUnit) => {
       {/* Results */}
       {result && <ResultsCard result={result} />}
       {result && <ResultsSummary result={result} />}
+
+      {/* Clear All button at bottom after results */}
+      {result && (
+        <div className="flex justify-center">
+          <Button onClick={handleReset} variant="outline" size="lg">
+            <RotateCcw className="mr-2 size-4" />
+            Clear All
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
